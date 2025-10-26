@@ -1,5 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ChevronDown, Award, Users, Calendar } from 'lucide-react';
+import mediaManifest from '../data/media-manifest.json';
+
+type ManifestMedia = {
+  kind: 'image' | 'video' | string;
+  url: string;
+};
+
+type MediaManifest = {
+  entries?: Record<string, { media?: ManifestMedia[] }>;
+};
 
 const Hero = () => {
   const scrollToServices = () => {
@@ -9,6 +19,31 @@ const Hero = () => {
     }
   };
 
+  const heroImageUrl = useMemo(() => {
+    const manifest = mediaManifest as MediaManifest;
+    const rootEntry = manifest.entries?.['.']?.media ?? [];
+    const image = rootEntry.find((item) => item.kind === 'image');
+    if (!image?.url) {
+      return '/images/f4e780e3-62d9-4004-b9fe-a2c1d58bdc1d.png';
+    }
+
+    if (!image.url.startsWith('https://res.cloudinary.com/')) {
+      return image.url;
+    }
+
+    const match = image.url.match(/(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)/);
+    if (!match) {
+      return image.url;
+    }
+
+    const [, prefix, rest] = match;
+    if (rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_')) {
+      return image.url;
+    }
+
+    return `${prefix}f_auto,q_auto:good,w_1800/${rest}`;
+  }, []);
+
   return (
     <section
       id="accueil"
@@ -16,7 +51,7 @@ const Hero = () => {
     >
       <div className="absolute inset-0">
         <img
-          src="/images/f4e780e3-62d9-4004-b9fe-a2c1d58bdc1d.png"
+          src={heroImageUrl}
           alt="Chef de chantier devant un mur de briques avec bétonnière"
           className="h-full w-full object-cover"
         />

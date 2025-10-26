@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, Paperclip } from 'lucide-react';
 
+type Status = 'idle' | 'success' | 'error';
+
+const initialForm = {
+  name: '',
+  email: '',
+  phone: '',
+  subject: '',
+  message: '',
+};
+
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: '',
-  });
+  const [formData, setFormData] = useState(initialForm);
   const [files, setFiles] = useState<FileList | null>(null);
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<Status>('idle');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,9 +40,10 @@ const Contact = () => {
 
       if (response.ok || response.type === 'opaqueredirect' || response.status === 0) {
         setStatus('success');
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setFormData(initialForm);
         setFiles(null);
         event.currentTarget.reset();
+        window.setTimeout(() => setStatus('idle'), 5000);
         return;
       }
 
@@ -46,10 +51,13 @@ const Contact = () => {
     } catch (error) {
       console.error(error);
       setStatus('error');
+      window.setTimeout(() => setStatus('idle'), 7000);
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
@@ -64,7 +72,7 @@ const Contact = () => {
             Contactez-<span className="text-orange-500">nous</span>
           </h2>
           <p className="mx-auto max-w-3xl text-xl text-gray-600">
-            Prêt à démarrer votre projet&nbsp;? Envoyez-nous une demande de devis complète pour un retour rapide.
+            Prêt à démarrer votre projet ? Envoyez-nous une demande de devis complète pour un retour rapide.
           </p>
         </div>
 
@@ -121,10 +129,10 @@ const Contact = () => {
             </div>
 
             <div className="rounded-lg bg-white p-8 shadow-lg">
-              <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d&apos;intervention</h3>
+              <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d’intervention</h3>
               <p className="mb-4 text-gray-600">
-                Nous intervenons dans un rayon de 80 km autour d’Épinal et Neufchâteau pour vos travaux de maçonnerie
-                et gros œuvre.
+                Nous intervenons dans un rayon de 80&nbsp;km autour d’Épinal et Neufchâteau pour vos travaux de
+                maçonnerie et de gros œuvre.
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                 <div>Épinal</div>
@@ -155,6 +163,7 @@ const Contact = () => {
                   Ne pas remplir : <input name="bot-field" onChange={handleChange} />
                 </label>
               </p>
+
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
@@ -181,7 +190,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all durée-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
               </div>
@@ -197,7 +206,7 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all durée-200 focus:border-transparent focus:ring-2.focus:ring-orange-500"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
@@ -210,7 +219,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all durée-200 focus:border-transparent focus:ring-2.focus:ring-orange-500"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">Sélectionner un type</option>
                     <option value="fondations">Fondations</option>
@@ -234,7 +243,7 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all durée-200 focus:border-transparent focus:ring-2.focus:ring-orange-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   placeholder="Décrivez votre projet en détail : surface, matériaux souhaités, délais, etc."
                 ></textarea>
               </div>
@@ -268,7 +277,7 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-orange-500 py-4 px-6 font-semibold text-white transition-all.duration-300 hover:scale-105 hover:bg-orange-600"
+                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-orange-500 py-4 px-6 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-orange-600"
               >
                 <Send className="h-5 w-5" />
                 <span>Envoyer la demande</span>

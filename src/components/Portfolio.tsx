@@ -319,21 +319,21 @@ const Portfolio = () => {
       },
       {
         id: 12,
-        title: 'Etancheite',
-        category: 'Etancheite',
-        folder: 'etancheite',
-        description: "Travaux d'etancheite et isolation",
-        ...withMediaData('etancheite'),
+        title: 'Etancheite & Terrassement',
+        category: 'Etancheite & Terrassement',
+        folder: 'etancheite-terrassement',
+        description: "Etancheite, drainage et terrassement pour vos projets exterieurs",
+        ...withMediaData('etancheite-terrassement'),
       },
       {
         id: 13,
-        title: 'Terrassement',
-        category: 'Terrassement',
-        folder: 'terrassement',
-        description: 'Preparation et nivellement de terrain',
-        ...withMediaData('terrassement'),
-    },
-  ];
+        title: 'Escalier Beton',
+        category: 'Escalier',
+        folder: 'escalier',
+        description: 'Fabrication d’escaliers beton sur mesure',
+        ...withMediaData('escalier'),
+      },
+    ];
 
   const categories = [
     'Tous',
@@ -341,8 +341,8 @@ const Portfolio = () => {
     'Murs & Cloisons',
     'Dalle Beton',
     'Renovation',
-    'Etancheite',
-    'Terrassement',
+    'Etancheite & Terrassement',
+    'Escalier',
   ];
   const [activeCategory, setActiveCategory] = useState('Tous');
 

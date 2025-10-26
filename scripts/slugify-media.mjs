@@ -10,6 +10,8 @@ const TARGET_DIRECTORIES = [
   path.resolve(__dirname, '..', 'public', 'images', 'dalle-beton'),
   path.resolve(__dirname, '..', 'public', 'images', 'murs-cloisons'),
   path.resolve(__dirname, '..', 'public', 'images', 'renovation'),
+  path.resolve(__dirname, '..', 'public', 'images', 'etancheite-terrassement'),
+  path.resolve(__dirname, '..', 'public', 'images', 'escalier'),
 ];
 
 const DIACRITIC_REGEX = /\p{Diacritic}/gu;

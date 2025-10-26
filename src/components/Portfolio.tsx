@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, AlertCircle, Play } from 'lucide-react';
 import mediaManifest from '../data/media-manifest.json';
 
@@ -71,10 +71,12 @@ const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   'svg',
 ]);
 const SUPPORTED_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
+const PRELOAD_AHEAD = 5;
 
 const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const preloadedImagesRef = useRef<Set<string>>(new Set());
 
   const optimizeCloudinaryUrl = useCallback((url: string, kind: MediaKind, options: OptimizeOptions = {}) => {
     if (!url.startsWith('https://res.cloudinary.com/')) {
@@ -392,25 +394,43 @@ const Portfolio = () => {
   }, [selectedProject, currentMediaIndex]);
 
   useEffect(() => {
-    if (!selectedProject || selectedProject.media.length <= 1) {
+    preloadedImagesRef.current = new Set();
+  }, [selectedProject?.id]);
+
+  useEffect(() => {
+    if (!selectedProject) {
       return;
     }
 
     const { media } = selectedProject;
     const total = media.length;
+    if (total === 0) {
+      return;
+    }
 
-    const preloadIndex = (index: number) => {
-      const normalizedIndex = (index + total) % total;
+    const preloadImageAt = (targetIndex: number) => {
+      const normalizedIndex = (targetIndex + total) % total;
       const item = media[normalizedIndex];
       if (!item || item.kind !== 'image') {
         return;
       }
+      const url = item.src;
+      if (!url || preloadedImagesRef.current.has(url)) {
+        return;
+      }
       const loader = new Image();
-      loader.src = item.src;
+      loader.src = url;
+      preloadedImagesRef.current.add(url);
     };
 
-    preloadIndex(currentMediaIndex + 1);
-    preloadIndex(currentMediaIndex - 1);
+    // Always make sure the current image is cached
+    preloadImageAt(currentMediaIndex);
+
+    preloadImageAt(currentMediaIndex - 1);
+
+    for (let offset = 1; offset <= PRELOAD_AHEAD; offset += 1) {
+      preloadImageAt(currentMediaIndex + offset);
+    }
   }, [selectedProject, currentMediaIndex]);
 
   useEffect(() => {

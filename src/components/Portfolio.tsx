@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, AlertCircle, Play } from 'lucide-react';
+import mediaManifest from '../data/media-manifest.json';
 
 type MediaKind = 'image' | 'video';
 
@@ -8,6 +9,8 @@ interface MediaItem {
   kind: MediaKind;
   name: string;
   extension: string;
+  relativePath?: string;
+  publicId?: string | null;
 }
 
 interface Project {
@@ -27,6 +30,31 @@ type FolderMediaInfo = {
   unsupportedExtensions: Set<string>;
 };
 
+interface ManifestMediaItem {
+  name: string;
+  extension: string;
+  kind: MediaKind;
+  url: string;
+  relativePath?: string;
+  publicId?: string | null;
+  bytes?: number | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+interface ManifestFolderEntry {
+  media?: ManifestMediaItem[];
+  hasUnsupportedMedia?: boolean;
+  unsupportedExtensions?: string[];
+}
+
+interface MediaManifest {
+  version: number;
+  generatedAt: string | null;
+  source: string;
+  entries: Record<string, ManifestFolderEntry>;
+}
+
 const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   'jpg',
   'jpeg',
@@ -42,46 +70,91 @@ const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  const folderMediaInfo = useMemo(() => {
-    const mediaModules = import.meta.glob<string>(
-      '../../public/images/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP,avif,AVIF,gif,GIF,svg,SVG,heic,HEIC,heif,HEIF,mp4,MP4,webm,WEBM,ogg,OGG,mov,MOV}',
-      { eager: true, import: 'default' }
-    );
+  const resolveMediaUrl = useCallback((url: string) => {
+    if (!url) {
+      return url;
+    }
 
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+
+    const base = import.meta.env.VITE_MEDIA_BASE_URL;
+    if (base) {
+      const normalizedBase = base.replace(/\/+$/, '');
+      const normalizedUrl = url.replace(/^\/+/, '');
+      return `${normalizedBase}/${normalizedUrl}`;
+    }
+
+    return url;
+  }, []);
+
+  const folderMediaInfo = useMemo(() => {
+    const manifestData = mediaManifest as MediaManifest;
+    const entries = manifestData?.entries ?? {};
     const info: Record<string, FolderMediaInfo> = {};
 
-    Object.entries(mediaModules).forEach(([path, url]) => {
-      const normalizedPath = path.replace('../../public/images/', '').replace(/\\/g, '/');
-      const segments = normalizedPath.split('/');
-      const fileName = segments.pop();
-      if (!fileName) {
-        return;
-      }
+    Object.entries(entries).forEach(([rawFolderKey, entry]) => {
+      const folderKey = rawFolderKey === '.' ? '' : rawFolderKey;
+      const folderInfo: FolderMediaInfo = {
+        media: [],
+        hasUnsupportedMedia: Boolean(entry?.hasUnsupportedMedia),
+        unsupportedExtensions: new Set(entry?.unsupportedExtensions ?? []),
+      };
 
-      const folderKey = segments.join('/');
-      if (!info[folderKey]) {
-        info[folderKey] = { media: [], hasUnsupportedMedia: false, unsupportedExtensions: new Set() };
-      }
+      (entry?.media ?? []).forEach((item) => {
+        if (!item) {
+          return;
+        }
 
-      const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
-      const entry = info[folderKey];
+        const extension = item.extension?.toLowerCase?.() ?? '';
+        const kind: MediaKind = item.kind === 'video' ? 'video' : 'image';
+        const resolvedUrl = resolveMediaUrl(item.url);
 
-      if (SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
-        entry.media.push({ src: url, kind: 'image', name: fileName, extension });
-      } else if (SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
-        entry.media.push({ src: url, kind: 'video', name: fileName, extension });
-      } else {
-        entry.hasUnsupportedMedia = true;
-        entry.unsupportedExtensions.add(extension || fileName);
-      }
-    });
+        if (!resolvedUrl) {
+          return;
+        }
 
-    Object.values(info).forEach((entry) => {
-      entry.media.sort((a, b) => a.name.localeCompare(b.name));
+        const addUnsupported = () => {
+          folderInfo.hasUnsupportedMedia = true;
+          if (extension) {
+            folderInfo.unsupportedExtensions.add(extension);
+          }
+        };
+
+        if (kind === 'image' && SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
+          folderInfo.media.push({
+            src: resolvedUrl,
+            kind,
+            name: item.name ?? `${extension}-image`,
+            extension,
+            relativePath: item.relativePath,
+            publicId: item.publicId ?? null,
+          });
+          return;
+        }
+
+        if (kind === 'video' && SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
+          folderInfo.media.push({
+            src: resolvedUrl,
+            kind,
+            name: item.name ?? `${extension}-video`,
+            extension,
+            relativePath: item.relativePath,
+            publicId: item.publicId ?? null,
+          });
+          return;
+        }
+
+        addUnsupported();
+      });
+
+      folderInfo.media.sort((a, b) => a.name.localeCompare(b.name));
+      info[folderKey] = folderInfo;
     });
 
     return info;
-  }, []);
+  }, [resolveMediaUrl]);
 
   const withMediaData = (folder: string) => {
     const entry = folderMediaInfo[folder];
@@ -519,10 +592,9 @@ const Portfolio = () => {
                       ) : (
                         <>
                           <p className="text-gray-400">
-                            Ajoutez vos images ou videos dans le dossier suivant puis rechargez la page :
-                          </p>
-                          <p className="text-orange-500 font-mono text-sm bg-black/30 px-4 py-2 rounded">
-                            public/images/{selectedProject.folder}/
+                            Ajoutez vos images ou videos dans <code className="font-mono text-sm">public/images/{selectedProject.folder}/</code> puis lancez{' '}
+                            <code className="font-mono text-sm">npm run manifest:local</code> ou <code className="font-mono text-sm">npm run media:upload</code> pour
+                            mettre a jour le catalogue avant de recharger la page.
                           </p>
                           <p className="text-gray-400 text-sm">
                             Formats supportes : images ({Array.from(SUPPORTED_IMAGE_EXTENSIONS).join(', ')}) et videos (mp4, webm, ogg)

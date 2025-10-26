@@ -10,10 +10,13 @@
     "preview": "vite preview",
     "convert:heic": "node scripts/convert-heic.mjs",
     "convert:videos": "node scripts/convert-videos.mjs",
-    "slugify:media": "node scripts/slugify-media.mjs"
+    "slugify:media": "node scripts/slugify-media.mjs",
+    "manifest:local": "node scripts/create-manifest.mjs",
+    "media:upload": "node scripts/upload-cloudinary.mjs"
   },
   "dependencies": {
     "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

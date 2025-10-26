@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, Paperclip } from 'lucide-react';
 
 const Contact = () => {
@@ -64,7 +64,7 @@ const Contact = () => {
             Contactez-<span className="text-orange-500">nous</span>
           </h2>
           <p className="mx-auto text-xl text-gray-600">
-            Prêt à démarrer votre projet ? Envoyez-nous une demande de devis complète pour un retour rapide.
+            PrÃªt Ã  dÃ©marrer votre projet ? Envoyez-nous une demande de devis complÃ¨te pour un retour rapide.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ const Contact = () => {
                     <Phone className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-800">Téléphone</h4>
+                    <h4 className="font-semibold text-slate-800">TÃ©lÃ©phone</h4>
                     <p className="text-gray-600">06 26 65 13 08</p>
                   </div>
                 </div>
@@ -98,9 +98,9 @@ const Contact = () => {
                   <div>
                     <h4 className="font-semibold text-slate-800">Adresse</h4>
                     <p className="text-gray-600">
-                      000 Rue des Bâtisseurs
+                      473 Rue du chemin vert
                       <br />
-                      00000 Paris, France
+                      88300 Neufchâteau, France
                     </p>
                   </div>
                 </div>
@@ -123,12 +123,12 @@ const Contact = () => {
             <div className="rounded-lg bg-white p-8 shadow-lg">
               <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d&apos;intervention</h3>
               <p className="mb-4 text-gray-600">
-                Nous intervenons dans un rayon de 80 km autour d&apos;Épinal et Neufchâteau pour vos travaux de
-                maçonnerie et gros œuvre.
+                Nous intervenons dans un rayon de 80 km autour d&apos;Ã‰pinal et NeufchÃ¢teau pour vos travaux de
+                maÃ§onnerie et gros Å“uvre.
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div>Épinal</div>
-                <div>Neufchâteau</div>
+                <div>Ã‰pinal</div>
+                <div>NeufchÃ¢teau</div>
                 <div>Mirecourt</div>
                 <div>Charmes</div>
                 <div>Rambervillers</div>
@@ -189,7 +189,7 @@ const Contact = () => {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <label htmlFor="phone" className="mb-2 block text-sm font-medium text-gray-700">
-                    Téléphone
+                    TÃ©lÃ©phone
                   </label>
                   <input
                     type="tel"
@@ -212,11 +212,11 @@ const Contact = () => {
                     required
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   >
-                    <option value="">Sélectionner un type</option>
+                    <option value="">SÃ©lectionner un type</option>
                     <option value="fondations">Fondations</option>
                     <option value="murs">Murs &amp; Cloisons</option>
-                    <option value="dalle">Dalle béton</option>
-                    <option value="renovation">Rénovation</option>
+                    <option value="dalle">Dalle bÃ©ton</option>
+                    <option value="renovation">RÃ©novation</option>
                     <option value="extension">Extension</option>
                     <option value="autre">Autre</option>
                   </select>
@@ -235,13 +235,13 @@ const Contact = () => {
                   required
                   rows={6}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-                  placeholder="Décrivez votre projet en détail : surface, matériaux souhaités, délais, etc."
+                  placeholder="DÃ©crivez votre projet en dÃ©tail : surface, matÃ©riaux souhaitÃ©s, dÃ©lais, etc."
                 ></textarea>
               </div>
 
               <div>
                 <label htmlFor="files" className="mb-2 block text-sm font-medium text-gray-700">
-                  Ajouter des fichiers (plans, photos, documents…)
+                  Ajouter des fichiers (plans, photos, documentsâ€¦)
                 </label>
                 <label
                   htmlFor="files"
@@ -249,8 +249,8 @@ const Contact = () => {
                 >
                   <span>
                     {files && files.length > 0
-                      ? `${files.length} fichier${files.length > 1 ? 's' : ''} sélectionné${files.length > 1 ? 's' : ''}`
-                      : 'Cliquez pour sélectionner ou glissez-déposez vos fichiers'}
+                      ? `${files.length} fichier${files.length > 1 ? 's' : ''} sÃ©lectionnÃ©${files.length > 1 ? 's' : ''}`
+                      : 'Cliquez pour sÃ©lectionner ou glissez-dÃ©posez vos fichiers'}
                   </span>
                   <Paperclip className="h-5 w-5" />
                 </label>
@@ -263,7 +263,7 @@ const Contact = () => {
                   accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx"
                   className="hidden"
                 />
-                <p className="mt-2 text-xs text-gray-500">Formats acceptés : JPG, PNG, HEIC, PDF, DOC (max 10 Mo chacun).</p>
+                <p className="mt-2 text-xs text-gray-500">Formats acceptÃ©s : JPG, PNG, HEIC, PDF, DOC (max 10 Mo chacun).</p>
               </div>
 
               <button
@@ -276,12 +276,12 @@ const Contact = () => {
 
               {status === 'success' && (
                 <p className="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                  Merci ! Votre demande de devis a bien été envoyée. Nous revenons vers vous rapidement.
+                  Merci ! Votre demande de devis a bien Ã©tÃ© envoyÃ©e. Nous revenons vers vous rapidement.
                 </p>
               )}
               {status === 'error' && (
                 <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  Une erreur est survenue lors de l&apos;envoi. Merci de réessayer ou de nous contacter par téléphone.
+                  Une erreur est survenue lors de l&apos;envoi. Merci de rÃ©essayer ou de nous contacter par tÃ©lÃ©phone.
                 </p>
               )}
             </form>
@@ -293,3 +293,4 @@ const Contact = () => {
 };
 
 export default Contact;
+

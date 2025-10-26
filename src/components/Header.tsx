@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Menu, X, Phone, Mail } from 'lucide-react';
 
 const Header = () => {
@@ -9,91 +9,128 @@ const Header = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navItems = useMemo(
+    () => [
+      { id: 'accueil', label: 'Accueil' },
+      { id: 'services', label: 'Services' },
+      { id: 'realisations', label: 'Réalisations' },
+      { id: 'contact', label: 'Contact' },
+    ],
+    []
+  );
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const offset = window.innerWidth < 768 ? 80 : 96;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const targetPosition = elementPosition - offset;
+      window.scrollTo({ top: targetPosition, behavior: 'smooth' });
     }
     setIsMenuOpen(false);
   };
 
   return (
-    <header className={`fixed w-full z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'
-    }`}>
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">C</span>
-            </div>
-            <div>
-              <h1 className={`text-xl font-bold ${isScrolled ? 'text-slate-800' : 'text-white'}`}>
-                Celik Batiment
-              </h1>
-              <p className={`text-sm ${isScrolled ? 'text-slate-600' : 'text-gray-200'}`}>
-                Gros œuvre & Construction
-              </p>
-            </div>
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/95 shadow-lg backdrop-blur' : 'bg-slate-900/40 backdrop-blur-md'
+      }`}
+    >
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
+        <button
+          onClick={() => scrollToSection('accueil')}
+          className="flex items-center space-x-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+        >
+          <div className="grid h-11 w-11 place-items-center rounded-xl bg-orange-500 shadow-lg shadow-orange-500/30">
+            <span className="text-lg font-bold text-white">C</span>
           </div>
-
-          <nav className="hidden md:flex space-x-8">
-            {['accueil', 'services', 'realisations', 'contact'].map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item)}
-                className={`capitalize font-medium transition-colors hover:text-orange-500 ${
-                  isScrolled ? 'text-slate-800' : 'text-white'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </nav>
-
-          <div className="hidden lg:flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Phone className={`w-4 h-4 ${isScrolled ? 'text-orange-500' : 'text-white'}`} />
-              <span className={`text-sm ${isScrolled ? 'text-slate-800' : 'text-white'}`}>
-                06 26 65 13 08
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Mail className={`w-4 h-4 ${isScrolled ? 'text-orange-500' : 'text-white'}`} />
-              <span className={`text-sm ${isScrolled ? 'text-slate-800' : 'text-white'}`}>
-                Entreprisemuratcelik@free.fr
-              </span>
-            </div>
+          <div className="leading-tight">
+            <h1 className={`text-lg font-semibold sm:text-xl ${isScrolled ? 'text-slate-800' : 'text-white'}`}>
+              Celik Bâtiment
+            </h1>
+            <p className={`text-xs sm:text-sm ${isScrolled ? 'text-slate-500' : 'text-slate-200'}`}>
+              Gros œuvre &amp; Construction
+            </p>
           </div>
+        </button>
 
-          <button
-            className={`md:hidden ${isScrolled ? 'text-slate-800' : 'text-white'}`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+        <nav className="hidden items-center space-x-8 md:flex">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => scrollToSection(item.id)}
+              className={`text-sm font-medium uppercase tracking-wide transition-colors hover:text-orange-500 ${
+                isScrolled ? 'text-slate-800' : 'text-white'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="hidden items-center space-x-4 lg:flex">
+          <a
+            href="tel:0626651308"
+            className={`flex items-center space-x-2 text-sm transition-colors hover:text-orange-500 ${
+              isScrolled ? 'text-slate-800' : 'text-white'
+            }`}
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+            <Phone className="h-4 w-4 text-orange-500" />
+            <span>06 26 65 13 08</span>
+          </a>
+          <a
+            href="mailto:entreprisemuratcelik@free.fr"
+            className={`flex items-center space-x-2 text-sm transition-colors hover:text-orange-500 ${
+              isScrolled ? 'text-slate-800' : 'text-white'
+            }`}
+          >
+            <Mail className="h-4 w-4 text-orange-500" />
+            <span>entreprisemuratcelik@free.fr</span>
+          </a>
         </div>
 
-        {isMenuOpen && (
-          <div className="md:hidden bg-white shadow-lg rounded-lg mt-2 p-4">
-            <nav className="flex flex-col space-y-4">
-              {['accueil', 'services', 'realisations', 'contact'].map((item) => (
+        <button
+          aria-label="Ouvrir le menu"
+          className={`rounded-lg p-2 md:hidden ${isScrolled ? 'text-slate-800' : 'text-white'}`}
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+        >
+          {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+        </button>
+      </div>
+
+      {isMenuOpen && (
+        <div className="mx-auto w-full max-w-6xl px-4 pb-4 md:hidden">
+          <div className="rounded-2xl border border-white/40 bg-white/95 p-4 shadow-lg backdrop-blur">
+            <nav className="flex flex-col space-y-3">
+              {navItems.map((item) => (
                 <button
-                  key={item}
-                  onClick={() => scrollToSection(item)}
-                  className="capitalize font-medium text-slate-800 hover:text-orange-500 transition-colors text-left"
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className="w-full rounded-lg px-3 py-2 text-left text-base font-medium text-slate-800 transition-colors hover:bg-orange-100 hover:text-orange-600"
                 >
-                  {item}
+                  {item.label}
                 </button>
               ))}
             </nav>
+            <div className="mt-4 space-y-2 rounded-lg bg-orange-50 p-3 text-sm text-slate-800">
+              <a className="flex items-center space-x-2" href="tel:0626651308">
+                <Phone className="h-4 w-4 text-orange-500" />
+                <span>06 26 65 13 08</span>
+              </a>
+              <a className="flex items-center space-x-2 break-all" href="mailto:entreprisemuratcelik@free.fr">
+                <Mail className="h-4 w-4 text-orange-500" />
+                <span>entreprisemuratcelik@free.fr</span>
+              </a>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };

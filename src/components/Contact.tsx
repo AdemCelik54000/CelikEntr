@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Paperclip } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -7,45 +7,73 @@ const Contact = () => {
     email: '',
     phone: '',
     subject: '',
-    message: ''
+    message: '',
   });
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Ici vous pourriez ajouter la logique pour envoyer le formulaire
-    console.log('Formulaire soumis:', formData);
-    alert('Merci pour votre message ! Nous vous recontacterons rapidement.');
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus('idle');
+
+    const payload = new FormData();
+    payload.append('form-name', 'devis');
+
+    Object.entries(formData).forEach(([key, value]) => {
+      payload.append(key, value);
+    });
+
+    if (files) {
+      Array.from(files).forEach((file) => payload.append('fichiers', file));
+    }
+
+    try {
+      const response = await fetch('/', {
+        method: 'POST',
+        body: payload,
+      });
+
+      if (!response.ok) {
+        throw new Error('Netlify form submission failed');
+      }
+
+      setStatus('success');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      setFiles(null);
+      event.currentTarget.reset();
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   return (
-    <section id="contact" className="py-20 bg-gray-50">
+    <section id="contact" className="bg-gray-50 py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-4xl font-bold text-slate-800 md:text-5xl">
             Contactez-<span className="text-orange-500">nous</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Prêt à démarrer votre projet ? Contactez-nous pour un devis gratuit et personnalisé.
+          <p className="mx-auto text-xl text-gray-600">
+            Prêt à démarrer votre projet ? Envoyez-nous une demande de devis complète pour un retour rapide.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Informations de contact */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-slate-800 mb-6">Informations de contact</h3>
+            <div className="rounded-lg bg-white p-8 shadow-lg">
+              <h3 className="mb-6 text-2xl font-bold text-slate-800">Informations de contact</h3>
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <Phone className="w-6 h-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
+                    <Phone className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Téléphone</h4>
@@ -53,58 +81,80 @@ const Contact = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
+                    <Mail className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Email</h4>
-                    <p className="text-gray-600">Entreprisemuratcelik@free.fr</p>
+                    <p className="text-gray-600">entreprisemuratcelik@free.fr</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
+                    <MapPin className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Adresse</h4>
-                    <p className="text-gray-600">000 Rue des Bâtisseurs<br />00000 Paris, France</p>
+                    <p className="text-gray-600">
+                      000 Rue des Bâtisseurs
+                      <br />
+                      00000 Paris, France
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
+                    <Clock className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Horaires</h4>
-                    <p className="text-gray-600">Lun-Ven: 0h-00h<br />Sam: 0h-00h</p>
+                    <p className="text-gray-600">
+                      Lun-Ven : 8h - 18h
+                      <br />
+                      Samedi : 8h - 12h
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-slate-800 mb-4">Zone d'intervention</h3>
-              <p className="text-gray-600 mb-4">
-                Nous intervenons dans un rayon de 00km autour d'Épinal et Neufchâteau pour tous vos projets de maçonnerie.
+            <div className="rounded-lg bg-white p-8 shadow-lg">
+              <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d&apos;intervention</h3>
+              <p className="mb-4 text-gray-600">
+                Nous intervenons dans un rayon de 80 km autour d&apos;Épinal et Neufchâteau pour vos travaux de
+                maçonnerie et gros œuvre.
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div>• Épinal</div>
-                <div>• Neufchâteau</div>
-                <div>• Mirecourt</div>
-                <div>• Charmes</div>
-                <div>• Rambervillers</div>
-                <div>• Golbey</div>
+                <div>Épinal</div>
+                <div>Neufchâteau</div>
+                <div>Mirecourt</div>
+                <div>Charmes</div>
+                <div>Rambervillers</div>
+                <div>Golbey</div>
               </div>
             </div>
           </div>
 
-          {/* Formulaire de contact */}
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-slate-800 mb-6">Demander un devis</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="rounded-lg bg-white p-8 shadow-lg">
+            <h3 className="mb-6 text-2xl font-bold text-slate-800">Demander un devis</h3>
+            <form
+              name="devis"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              encType="multipart/form-data"
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+              <input type="hidden" name="form-name" value="devis" />
+              <p className="hidden">
+                <label>
+                  Ne pas remplir : <input name="bot-field" onChange={handleChange} />
+                </label>
+              </p>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
                     Nom complet *
                   </label>
                   <input
@@ -114,11 +164,11 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
                     Email *
                   </label>
                   <input
@@ -128,13 +178,14 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-gray-700">
                     Téléphone
                   </label>
                   <input
@@ -143,11 +194,11 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="subject" className="mb-2 block text-sm font-medium text-gray-700">
                     Type de projet *
                   </label>
                   <select
@@ -156,11 +207,11 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">Sélectionner un type</option>
                     <option value="fondations">Fondations</option>
-                    <option value="murs">Murs & Cloisons</option>
+                    <option value="murs">Murs &amp; Cloisons</option>
                     <option value="dalle">Dalle béton</option>
                     <option value="renovation">Rénovation</option>
                     <option value="extension">Extension</option>
@@ -168,8 +219,9 @@ const Contact = () => {
                   </select>
                 </div>
               </div>
+
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="message" className="mb-2 block text-sm font-medium text-gray-700">
                   Description du projet *
                 </label>
                 <textarea
@@ -179,17 +231,56 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Décrivez votre projet en détail..."
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                  placeholder="Décrivez votre projet en détail : surface, matériaux souhaités, délais, etc."
                 ></textarea>
               </div>
+
+              <div>
+                <label htmlFor="files" className="mb-2 block text-sm font-medium text-gray-700">
+                  Ajouter des fichiers (plans, photos, documents…)
+                </label>
+                <label
+                  htmlFor="files"
+                  className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 transition-colors hover:border-orange-400 hover:text-orange-500"
+                >
+                  <span>
+                    {files && files.length > 0
+                      ? `${files.length} fichier${files.length > 1 ? 's' : ''} sélectionné${files.length > 1 ? 's' : ''}`
+                      : 'Cliquez pour sélectionner ou glissez-déposez vos fichiers'}
+                  </span>
+                  <Paperclip className="h-5 w-5" />
+                </label>
+                <input
+                  id="files"
+                  name="fichiers"
+                  type="file"
+                  multiple
+                  onChange={(event) => setFiles(event.target.files)}
+                  accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx"
+                  className="hidden"
+                />
+                <p className="mt-2 text-xs text-gray-500">Formats acceptés : JPG, PNG, HEIC, PDF, DOC (max 10 Mo chacun).</p>
+              </div>
+
               <button
                 type="submit"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105"
+                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-orange-500 py-4 px-6 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-orange-600"
               >
-                <Send className="w-5 h-5" />
+                <Send className="h-5 w-5" />
                 <span>Envoyer la demande</span>
               </button>
+
+              {status === 'success' && (
+                <p className="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                  Merci ! Votre demande de devis a bien été envoyée. Nous revenons vers vous rapidement.
+                </p>
+              )}
+              {status === 'error' && (
+                <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  Une erreur est survenue lors de l&apos;envoi. Merci de réessayer ou de nous contacter par téléphone.
+                </p>
+              )}
             </form>
           </div>
         </div>

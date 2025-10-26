@@ -70,6 +70,29 @@ const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
+  const optimizeCloudinaryUrl = useCallback((url: string, kind: MediaKind) => {
+    if (!url.startsWith('https://res.cloudinary.com/')) {
+      return url;
+    }
+
+    const match = url.match(/(https:\/\/res\.cloudinary\.com\/[^/]+\/(image|video)\/upload\/)(.+)/);
+    if (!match) {
+      return url;
+    }
+
+    const [, prefix, resourceType, rest] = match;
+    const hasTransform = rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_');
+    if (hasTransform) {
+      return url;
+    }
+
+    const transformation = resourceType === 'image' || kind === 'image'
+      ? 'f_auto,q_auto:good,w_1600'
+      : 'f_auto,q_auto:good';
+
+    return `${prefix}${transformation}/${rest}`;
+  }, []);
+
   const resolveMediaUrl = useCallback((url: string) => {
     if (!url) {
       return url;
@@ -110,6 +133,7 @@ const Portfolio = () => {
         const extension = item.extension?.toLowerCase?.() ?? '';
         const kind: MediaKind = item.kind === 'video' ? 'video' : 'image';
         const resolvedUrl = resolveMediaUrl(item.url);
+        const optimizedUrl = optimizeCloudinaryUrl(resolvedUrl, kind);
 
         if (!resolvedUrl) {
           return;
@@ -124,7 +148,7 @@ const Portfolio = () => {
 
         if (kind === 'image' && SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
           folderInfo.media.push({
-            src: resolvedUrl,
+            src: optimizedUrl,
             kind,
             name: item.name ?? `${extension}-image`,
             extension,
@@ -136,7 +160,7 @@ const Portfolio = () => {
 
         if (kind === 'video' && SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
           folderInfo.media.push({
-            src: resolvedUrl,
+            src: optimizedUrl,
             kind,
             name: item.name ?? `${extension}-video`,
             extension,
@@ -154,7 +178,7 @@ const Portfolio = () => {
     });
 
     return info;
-  }, [resolveMediaUrl]);
+  }, [optimizeCloudinaryUrl, resolveMediaUrl]);
 
   const withMediaData = (folder: string) => {
     const entry = folderMediaInfo[folder];
@@ -406,8 +430,9 @@ const Portfolio = () => {
                       <img
                         src={preview.src}
                         alt={project.title}
-                        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
                         loading="lazy"
+                        decoding="async"
+                        className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     ) : (
                       <video
@@ -502,7 +527,10 @@ const Portfolio = () => {
                             <img
                               src={selectedProject.media[currentMediaIndex].src}
                               alt={selectedProject.title}
-                              className="max-h-[75vh] max-w-[90vw] w-auto h-auto rounded-2xl shadow-2xl object-contain bg-black/10"
+                              loading="lazy"
+                              decoding="async"
+                              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 60vw"
+                              className="max-h-[75vh] max-w-[90vw] w-auto h-auto rounded-2xl bg-black/10 object-contain shadow-2xl"
                               onError={(event) => {
                                 event.currentTarget.style.display = 'none';
                                 const fallback = event.currentTarget.nextElementSibling as HTMLDivElement | null;
@@ -527,7 +555,8 @@ const Portfolio = () => {
                               autoPlay
                               muted
                               playsInline
-                              className="max-h-[75vh] max-w-[90vw] w-auto rounded-2xl shadow-2xl bg-black/20"
+                              preload="metadata"
+                              className="max-h-[75vh] max-w-[90vw] w-auto rounded-2xl bg-black/20 shadow-2xl"
                               onError={(event) => {
                                 event.currentTarget.style.display = 'none';
                                 const fallback = event.currentTarget.nextElementSibling as HTMLDivElement | null;

@@ -29,9 +29,12 @@ const Contact = () => {
       const response = await fetch(actionUrl, {
         method: 'POST',
         body: payload,
+        headers: {
+          Accept: 'application/json',
+        },
       });
 
-      if (response.ok) {
+      if (response.ok || response.type === 'opaqueredirect' || response.status === 0) {
         setStatus('success');
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
         setFiles(null);

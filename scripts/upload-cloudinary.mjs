@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const DEFAULT_SOURCE = path.resolve(__dirname, '..', 'public', 'images');
 const DEFAULT_MANIFEST = path.resolve(__dirname, '..', 'src', 'data', 'media-manifest.json');
-const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'svg']);
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'svg', 'heic', 'heif']);
 const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
 
 function parseArgs(argv) {

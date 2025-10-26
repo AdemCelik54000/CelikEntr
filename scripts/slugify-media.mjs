@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const TARGET_DIRECTORIES = [
   path.resolve(__dirname, '..', 'public', 'images', 'fondations'),
   path.resolve(__dirname, '..', 'public', 'images', 'dalle-beton'),
+  path.resolve(__dirname, '..', 'public', 'images', 'murs-cloisons'),
 ];
 
 const DIACRITIC_REGEX = /\p{Diacritic}/gu;

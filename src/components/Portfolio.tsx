@@ -69,6 +69,8 @@ const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   'avif',
   'gif',
   'svg',
+  'heic',
+  'heif',
 ]);
 const SUPPORTED_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
 const PRELOAD_AHEAD = 5;

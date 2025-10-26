@@ -288,11 +288,7 @@ const Contact = () => {
                   Merci ! Votre demande de devis a bien été envoyée. Nous revenons vers vous rapidement.
                 </p>
               )}
-              {status === 'error' && (
-                <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  Une erreur est survenue lors de l&apos;envoi. Merci de réessayer ou de nous contacter par téléphone.
-                </p>
-              )}
+              {status === 'error' && null}
             </form>
           </div>
         </div>

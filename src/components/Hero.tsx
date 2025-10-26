@@ -11,7 +11,14 @@ const Hero = () => {
 
   return (
     <section id="accueil" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-slate-800"></div>
+      <div className="absolute inset-0">
+        <img
+          src="/images/f4e780e3-62d9-4004-b9fe-a2c1d58bdc1d.png"
+          alt="Chef de chantier devant un mur en briques"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-slate-900/70"></div>
+      </div>
       
       <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up">

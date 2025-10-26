@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { X, ChevronLeft, ChevronRight, Image as ImageIcon, AlertCircle, Play } from 'lucide-react';
+
+type MediaKind = 'image' | 'video';
+
+interface MediaItem {
+  src: string;
+  kind: MediaKind;
+  name: string;
+  extension: string;
+}
 
 interface Project {
   id: number;
@@ -7,157 +16,282 @@ interface Project {
   category: string;
   folder: string;
   description: string;
-  images: string[];
+  media: MediaItem[];
+  hasUnsupportedMedia: boolean;
+  unsupportedExtensions: string[];
 }
+
+type FolderMediaInfo = {
+  media: MediaItem[];
+  hasUnsupportedMedia: boolean;
+  unsupportedExtensions: Set<string>;
+};
+
+const SUPPORTED_IMAGE_EXTENSIONS = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'avif',
+  'gif',
+  'svg',
+]);
+const SUPPORTED_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
 
 const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const folderMediaInfo = useMemo(() => {
+    const mediaModules = import.meta.glob<string>(
+      '../../public/images/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP,avif,AVIF,gif,GIF,svg,SVG,heic,HEIC,heif,HEIF,mp4,MP4,webm,WEBM,ogg,OGG,mov,MOV}',
+      { eager: true, import: 'default' }
+    );
+
+    const info: Record<string, FolderMediaInfo> = {};
+
+    Object.entries(mediaModules).forEach(([path, url]) => {
+      const normalizedPath = path.replace('../../public/images/', '').replace(/\\/g, '/');
+      const segments = normalizedPath.split('/');
+      const fileName = segments.pop();
+      if (!fileName) {
+        return;
+      }
+
+      const folderKey = segments.join('/');
+      if (!info[folderKey]) {
+        info[folderKey] = { media: [], hasUnsupportedMedia: false, unsupportedExtensions: new Set() };
+      }
+
+      const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
+      const entry = info[folderKey];
+
+      if (SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
+        entry.media.push({ src: url, kind: 'image', name: fileName, extension });
+      } else if (SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
+        entry.media.push({ src: url, kind: 'video', name: fileName, extension });
+      } else {
+        entry.hasUnsupportedMedia = true;
+        entry.unsupportedExtensions.add(extension || fileName);
+      }
+    });
+
+    Object.values(info).forEach((entry) => {
+      entry.media.sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    return info;
+  }, []);
+
+  const withMediaData = (folder: string) => {
+    const entry = folderMediaInfo[folder];
+    if (!entry) {
+      return { media: [], hasUnsupportedMedia: false, unsupportedExtensions: [] as string[] };
+    }
+
+    return {
+      media: entry.media,
+      hasUnsupportedMedia: entry.hasUnsupportedMedia,
+      unsupportedExtensions: Array.from(entry.unsupportedExtensions).sort(),
+    };
+  };
 
   const projects: Project[] = [
-    // Fondations
     {
       id: 1,
-      title: "Fondations Fouilles",
-      category: "Fondations",
-      folder: "fondations/fondations-fouilles",
-      description: "Excavation et préparation des fouilles pour fondations",
-      images: []
+      title: 'Fondations Fouilles',
+      category: 'Fondations',
+      folder: 'fondations/fondations-fouilles',
+      description: 'Excavation et preparation des fouilles pour fondations',
+      ...withMediaData('fondations/fondations-fouilles'),
     },
     {
       id: 2,
-      title: "Fondations Propretés",
-      category: "Fondations",
-      folder: "fondations/fondations-propretes",
-      description: "Béton de propreté pour assise des fondations",
-      images: []
+      title: 'Fondations Propretes',
+      category: 'Fondations',
+      folder: 'fondations/fondations-propretes',
+      description: 'Beton de propriete pour assise des fondations',
+      ...withMediaData('fondations/fondations-propretes'),
     },
     {
       id: 3,
-      title: "Fondations Semelles",
-      category: "Fondations",
-      folder: "fondations/fondations-semelles",
-      description: "Semelles filantes et isolées en béton armé",
-      images: []
+      title: 'Fondations Semelles',
+      category: 'Fondations',
+      folder: 'fondations/fondations-semelles',
+      description: 'Semelles filantes et isolees en beton arme',
+      ...withMediaData('fondations/fondations-semelles'),
     },
     {
       id: 4,
-      title: "Fondations Plots",
-      category: "Fondations",
-      folder: "fondations/fondations-plots",
-      description: "Plots béton pour structures légères",
-      images: []
+      title: 'Fondations Plots',
+      category: 'Fondations',
+      folder: 'fondations/fondations-plots',
+      description: 'Plots beton pour structures legeres',
+      ...withMediaData('fondations/fondations-plots'),
     },
     {
       id: 5,
-      title: "Fondations Bétons",
-      category: "Fondations",
-      folder: "fondations/fondations-betons",
-      description: "Coulage de béton pour fondations massives",
-      images: []
+      title: 'Fondations Betons',
+      category: 'Fondations',
+      folder: 'fondations/fondations-betons',
+      description: 'Coulage de beton pour fondations massives',
+      ...withMediaData('fondations/fondations-betons'),
     },
     {
       id: 6,
-      title: "Fondations Radier",
-      category: "Fondations",
-      folder: "fondations/fondations-radier",
-      description: "Radier général pour terrain difficile",
-      images: []
+      title: 'Fondations Radier',
+      category: 'Fondations',
+      folder: 'fondations/fondations-radier',
+      description: 'Radier general pour terrain difficile',
+      ...withMediaData('fondations/fondations-radier'),
     },
     {
       id: 7,
-      title: "Fondations Bâtiments",
-      category: "Fondations",
-      folder: "fondations/fondations-batiments",
-      description: "Fondations spéciales pour bâtiments industriels",
-      images: []
+      title: 'Fondations Batiments',
+      category: 'Fondations',
+      folder: 'fondations/fondations-batiments',
+      description: 'Fondations speciales pour batiments industriels',
+      ...withMediaData('fondations/fondations-batiments'),
     },
-    // Autres catégories
     {
       id: 8,
-      title: "Murs & Cloisons",
-      category: "Murs & Cloisons",
-      folder: "murs-cloisons",
-      description: "Construction de murs porteurs et cloisons",
-      images: []
+      title: 'Murs & Cloisons',
+      category: 'Murs & Cloisons',
+      folder: 'murs-cloisons',
+      description: 'Construction de murs porteurs et cloisons',
+      ...withMediaData('murs-cloisons'),
+      },
+      {
+        id: 9,
+        title: 'Dalle Beton Plancher',
+        category: 'Dalle Beton',
+        folder: 'dalle-beton/plancher',
+        description: 'Realisation de dalles beton pour planchers',
+        ...withMediaData('dalle-beton/plancher'),
+      },
+      {
+        id: 10,
+        title: 'Dalle Beton Sol',
+        category: 'Dalle Beton',
+        folder: 'dalle-beton/sol-beton',
+        description: 'Preparation et coulage de sols beton',
+        ...withMediaData('dalle-beton/sol-beton'),
+      },
+      {
+        id: 11,
+        title: 'Renovation',
+        category: 'Renovation',
+        folder: 'renovation',
+        description: 'Renovation complete de batiments',
+        ...withMediaData('renovation'),
+      },
+      {
+        id: 12,
+        title: 'Etancheite',
+        category: 'Etancheite',
+        folder: 'etancheite',
+        description: "Travaux d'etancheite et isolation",
+        ...withMediaData('etancheite'),
+      },
+      {
+        id: 13,
+        title: 'Terrassement',
+        category: 'Terrassement',
+        folder: 'terrassement',
+        description: 'Preparation et nivellement de terrain',
+        ...withMediaData('terrassement'),
     },
-    {
-      id: 9,
-      title: "Dalle Béton",
-      category: "Dalle Béton",
-      folder: "dalle-beton",
-      description: "Coulage de dalles béton avec finition",
-      images: []
-    },
-    {
-      id: 10,
-      title: "Rénovation",
-      category: "Rénovation",
-      folder: "renovation",
-      description: "Rénovation complète de bâtiments",
-      images: []
-    },
-    {
-      id: 11,
-      title: "Étanchéité",
-      category: "Étanchéité",
-      folder: "etancheite",
-      description: "Travaux d'étanchéité et isolation",
-      images: []
-    },
-    {
-      id: 12,
-      title: "Terrassement",
-      category: "Terrassement",
-      folder: "terrassement",
-      description: "Préparation et nivellement de terrain",
-      images: []
-    }
   ];
 
-  const categories = ["Tous", "Fondations", "Murs & Cloisons", "Dalle Béton", "Rénovation", "Étanchéité", "Terrassement"];
-  const [activeCategory, setActiveCategory] = useState("Tous");
+  const categories = [
+    'Tous',
+    'Fondations',
+    'Murs & Cloisons',
+    'Dalle Beton',
+    'Renovation',
+    'Etancheite',
+    'Terrassement',
+  ];
+  const [activeCategory, setActiveCategory] = useState('Tous');
 
-  const filteredProjects = activeCategory === "Tous" 
-    ? projects 
-    : projects.filter(project => project.category === activeCategory);
+  const filteredProjects =
+    activeCategory === 'Tous'
+      ? projects
+      : projects.filter((project) => project.category === activeCategory);
+
+  const selectedUnsupportedList = selectedProject
+    ? selectedProject.unsupportedExtensions.length > 0
+      ? selectedProject.unsupportedExtensions.join(', ')
+      : 'non reconnus'
+    : '';
 
   const openGallery = (project: Project) => {
     setSelectedProject(project);
-    setCurrentImageIndex(0);
+    setCurrentMediaIndex(0);
   };
 
-  const closeGallery = () => {
+  const closeGallery = useCallback(() => {
     setSelectedProject(null);
-    setCurrentImageIndex(0);
-  };
+    setCurrentMediaIndex(0);
+  }, []);
 
-  const nextImage = () => {
-    if (selectedProject && selectedProject.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === selectedProject.images.length - 1 ? 0 : prev + 1
-      );
+  const nextMedia = useCallback(() => {
+    if (!selectedProject || selectedProject.media.length === 0) {
+      return;
     }
-  };
+    setCurrentMediaIndex((prev) =>
+      prev === selectedProject.media.length - 1 ? 0 : prev + 1
+    );
+  }, [selectedProject]);
 
-  const prevImage = () => {
-    if (selectedProject && selectedProject.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? selectedProject.images.length - 1 : prev - 1
-      );
+  const prevMedia = useCallback(() => {
+    if (!selectedProject || selectedProject.media.length === 0) {
+      return;
     }
-  };
+    setCurrentMediaIndex((prev) =>
+      prev === 0 ? selectedProject.media.length - 1 : prev - 1
+    );
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (!selectedProject) {
+      return;
+    }
+
+    if (currentMediaIndex >= selectedProject.media.length) {
+      setCurrentMediaIndex(0);
+    }
+  }, [selectedProject, currentMediaIndex]);
+
+  useEffect(() => {
+    if (!selectedProject) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeGallery();
+      } else if (event.key === 'ArrowRight') {
+        nextMedia();
+      } else if (event.key === 'ArrowLeft') {
+        prevMedia();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedProject, closeGallery, nextMedia, prevMedia]);
 
   return (
     <section id="realisations" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
-            Nos <span className="text-orange-500">Réalisations</span>
+            Nos <span className="text-orange-500">Realisations</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Découvrez quelques-uns de nos projets récents qui témoignent de notre expertise 
-            et de la qualité de nos réalisations.
+            Decouvrez quelques-uns de nos projets recents qui temoignent de notre expertise et de la
+            qualite de nos realisations.
           </p>
         </div>
 
@@ -178,42 +312,100 @@ const Portfolio = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <div 
-              key={project.id} 
-              className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-              onClick={() => openGallery(project)}
-            >
-              <div className="relative overflow-hidden rounded-lg shadow-lg bg-gradient-to-br from-slate-700 to-slate-900">
-                <div className="w-full h-64 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                  <div className="text-center text-white p-6">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-gray-300 text-sm">{project.description}</p>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-xl">📷</span>
+          {filteredProjects.map((project) => {
+            const previewImage = project.media.find((item) => item.kind === 'image');
+            const previewVideo = project.media.find((item) => item.kind === 'video');
+            const preview = previewImage ?? previewVideo;
+            const hasPreview = Boolean(preview);
+            const overlayIcon = preview?.kind === 'video' ? <Play className="w-6 h-6" /> : <ImageIcon className="w-6 h-6" />;
+            const unsupportedList =
+              project.unsupportedExtensions.length > 0 ? project.unsupportedExtensions.join(', ') : 'non reconnus';
+
+            return (
+              <div
+                key={project.id}
+                className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+                onClick={() => openGallery(project)}
+              >
+                <div className="relative overflow-hidden rounded-lg shadow-lg">
+                  {hasPreview && preview ? (
+                    preview.kind === 'image' ? (
+                      <img
+                        src={preview.src}
+                        alt={project.title}
+                        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <video
+                        src={preview.src}
+                        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-64 bg-gradient-to-br from-slate-700 to-slate-900 flex flex-col items-center justify-center text-center text-white p-6 gap-3">
+                      <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
+                      {project.hasUnsupportedMedia ? (
+                        <>
+                          <p className="text-sm font-semibold">Formats non supportes detectes</p>
+                          <p className="text-xs text-gray-300">
+                            Convertissez les fichiers {unsupportedList} en formats compatibles.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold">Ajoutez vos images ou videos</p>
+                          <p className="text-xs text-gray-300">
+                            Placez-les dans <span className="font-mono">public/images/{project.folder}</span>
+                          </p>
+                        </>
+                      )}
                     </div>
-                    <p className="text-sm">Voir la galerie</p>
+                  )}
+
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="text-white text-center space-y-2">
+                      <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center mx-auto">
+                        {overlayIcon}
+                      </div>
+                      <p className="text-sm font-medium">Voir la galerie</p>
+                    </div>
                   </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <span className="inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {project.category}
-                  </span>
+
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 space-y-2">
+                    <span className="inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {project.category}
+                    </span>
+                    <div className="text-white">
+                      <h3 className="text-lg font-semibold">{project.title}</h3>
+                      <p className="text-xs text-gray-200">{project.description}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Modal de galerie */}
         {selectedProject && (
-          <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-            <div className="relative max-w-6xl max-h-full w-full">
-              {/* Header */}
+          <div
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                closeGallery();
+              }
+            }}
+          >
+            <div
+              className="relative max-w-6xl max-h-full w-full"
+              onClick={(event) => event.stopPropagation()}
+            >
               <div className="flex justify-between items-center mb-4">
                 <div className="text-white">
                   <h3 className="text-2xl font-bold">{selectedProject.title}</h3>
@@ -227,39 +419,71 @@ const Portfolio = () => {
                 </button>
               </div>
 
-              {/* Contenu de la galerie */}
               <div className="relative">
-                {selectedProject.images.length > 0 ? (
+                {selectedProject.media.length > 0 ? (
                   <>
-                    {/* Image principale */}
-                    <div className="w-full h-96 bg-slate-800 rounded-lg flex items-center justify-center mb-4">
-                      <img 
-                        src={`/images/${selectedProject.folder}/${selectedProject.images[currentImageIndex]}`}
-                        alt={selectedProject.title}
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling!.style.display = 'flex';
-                        }}
-                      />
-                      <div className="text-white text-center" style={{display: 'none'}}>
-                        <p className="text-xl">Image non disponible</p>
-                        <p className="text-sm text-gray-400">Ajoutez vos images dans le dossier :</p>
-                        <p className="text-sm text-orange-500">public/images/{selectedProject.folder}/</p>
+                    <div className="relative flex items-center justify-center mb-6">
+                      <div className="flex items-center justify-center max-h-[75vh] max-w-[min(90vw,1100px)]">
+                        {selectedProject.media[currentMediaIndex].kind === 'image' ? (
+                          <>
+                            <img
+                              src={selectedProject.media[currentMediaIndex].src}
+                              alt={selectedProject.title}
+                              className="max-h-[75vh] max-w-[90vw] w-auto h-auto rounded-2xl shadow-2xl object-contain bg-black/10"
+                              onError={(event) => {
+                                event.currentTarget.style.display = 'none';
+                                const fallback = event.currentTarget.nextElementSibling as HTMLDivElement | null;
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                            <div className="hidden absolute inset-0 flex-col items-center justify-center rounded-2xl bg-slate-900/80 text-white text-center gap-3 px-6">
+                              <p className="text-xl font-semibold">Image non disponible</p>
+                              <p className="text-sm text-gray-300">
+                                Verifiez le format et l'emplacement du fichier puis reessayez.
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <video
+                              key={selectedProject.media[currentMediaIndex].src}
+                              src={selectedProject.media[currentMediaIndex].src}
+                              controls
+                              autoPlay
+                              muted
+                              playsInline
+                              className="max-h-[75vh] max-w-[90vw] w-auto rounded-2xl shadow-2xl bg-black/20"
+                              onError={(event) => {
+                                event.currentTarget.style.display = 'none';
+                                const fallback = event.currentTarget.nextElementSibling as HTMLDivElement | null;
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                            <div className="hidden absolute inset-0 flex-col items-center justify-center rounded-2xl bg-slate-900/80 text-white text-center gap-3 px-6">
+                              <p className="text-xl font-semibold">Video non disponible</p>
+                              <p className="text-sm text-gray-300">
+                                Convertissez la en .mp4 ou .webm et reessayez.
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    {/* Navigation */}
-                    {selectedProject.images.length > 1 && (
+                    {selectedProject.media.length > 1 && (
                       <>
                         <button
-                          onClick={prevImage}
+                          onClick={prevMedia}
                           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                         >
                           <ChevronLeft size={24} />
                         </button>
                         <button
-                          onClick={nextImage}
+                          onClick={nextMedia}
                           className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                         >
                           <ChevronRight size={24} />
@@ -267,26 +491,44 @@ const Portfolio = () => {
                       </>
                     )}
 
-                    {/* Indicateur de position */}
                     <div className="text-center text-white mt-4">
                       <span className="bg-black/50 px-3 py-1 rounded-full text-sm">
-                        {currentImageIndex + 1} / {selectedProject.images.length}
+                        {currentMediaIndex + 1} / {selectedProject.media.length}
                       </span>
                     </div>
                   </>
                 ) : (
-                  /* Message quand aucune image */
-                  <div className="w-full h-96 bg-slate-800 rounded-lg flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <div className="text-6xl mb-4">📁</div>
-                      <h4 className="text-xl font-bold mb-2">Aucune image disponible</h4>
-                      <p className="text-gray-400 mb-4">Ajoutez vos images dans le dossier :</p>
-                      <p className="text-orange-500 font-mono text-sm bg-black/30 px-4 py-2 rounded">
-                        public/images/{selectedProject.folder}/
-                      </p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        Formats supportés : .jpg, .jpeg, .png, .webp
-                      </p>
+                  <div className="w-full min-h-[50vh] rounded-2xl bg-slate-900/70 border border-white/5 flex items-center justify-center">
+                    <div className="text-white text-center space-y-4 px-6 max-w-lg">
+                      <AlertCircle className="w-14 h-14 text-orange-400 mx-auto" />
+                      <h4 className="text-xl font-bold">
+                        {selectedProject.hasUnsupportedMedia
+                          ? 'Formats de fichiers non supportes'
+                          : 'Aucun media disponible'}
+                      </h4>
+                      {selectedProject.hasUnsupportedMedia ? (
+                        <>
+                          <p className="text-gray-300">
+                            Des fichiers ont ete trouves mais ne peuvent pas etre affiches automatiquement.
+                          </p>
+                          <p className="text-orange-400 font-medium">
+                            Convertissez-les vers un format compatible ({selectedUnsupportedList}) puis actualisez la
+                            page.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-gray-400">
+                            Ajoutez vos images ou videos dans le dossier suivant puis rechargez la page :
+                          </p>
+                          <p className="text-orange-500 font-mono text-sm bg-black/30 px-4 py-2 rounded">
+                            public/images/{selectedProject.folder}/
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            Formats supportes : images ({Array.from(SUPPORTED_IMAGE_EXTENSIONS).join(', ')}) et videos (mp4, webm, ogg)
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

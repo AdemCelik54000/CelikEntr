@@ -6,33 +6,34 @@ const Services = () => {
     {
       icon: <Home className="w-12 h-12 text-orange-500" />,
       title: "Fondations",
-      description: "Fondations béton, semelles, radiers pour une base solide et durable de votre construction."
+      description: "Fondations béton, semelles et radiers pour une base solide et durable de votre construction.",
     },
     {
       icon: <Building className="w-12 h-12 text-orange-500" />,
       title: "Murs & Cloisons",
-      description: "Construction de murs porteurs, cloisons, murs de soutènement en béton, parpaing ou pierre."
+      description:
+        "Construction de murs porteurs, cloisons et murs de soutènement en béton, parpaing ou pierre.",
     },
     {
       icon: <Hammer className="w-12 h-12 text-orange-500" />,
       title: "Dalle Béton",
-      description: "Coulage de dalles béton, chapes, terrasses avec finition lisse ou décorative."
+      description: "Coulage de dalles béton, chapes et terrasses avec finition lisse ou décorative.",
     },
     {
       icon: <Wrench className="w-12 h-12 text-orange-500" />,
       title: "Rénovation",
-      description: "Rénovation complète, extension, surélévation de bâtiments existants."
+      description: "Rénovation complète, extension et surélévation de bâtiments existants.",
     },
     {
       icon: <Shield className="w-12 h-12 text-orange-500" />,
       title: "Étanchéité",
-      description: "Travaux d'étanchéité, isolation, traitement de l'humidité pour votre confort."
+      description: "Travaux d'étanchéité, isolation et traitement de l'humidité pour votre confort.",
     },
     {
       icon: <Truck className="w-12 h-12 text-orange-500" />,
       title: "Terrassement",
-      description: "Préparation du terrain, terrassement, évacuation des terres et aménagements."
-    }
+      description: "Préparation du terrain, terrassement, évacuation des terres et aménagements.",
+    },
   ];
 
   return (
@@ -43,20 +44,18 @@ const Services = () => {
             Nos <span className="text-orange-500">Services</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Des fondations à la finition, nous maîtrisons tous les aspects du gros œuvre 
-            pour concrétiser vos projets de construction et de rénovation.
+            Des fondations à la finition, nous maîtrisons tous les aspects du gros œuvre pour concrétiser vos
+            projets de construction et de rénovation.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <div 
-              key={index}
+            <div
+              key={service.title}
               className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group"
             >
-              <div className="mb-6 group-hover:scale-110 transition-transform duration-300">
-                {service.icon}
-              </div>
+              <div className="mb-6 group-hover:scale-110 transition-transform duration-300">{service.icon}</div>
               <h3 className="text-xl font-bold text-slate-800 mb-4">{service.title}</h3>
               <p className="text-gray-600 leading-relaxed">{service.description}</p>
             </div>
@@ -66,36 +65,34 @@ const Services = () => {
         <div className="mt-16 bg-white rounded-lg shadow-lg p-8 md:p-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-slate-800 mb-6">
-                Pourquoi nous choisir ?
-              </h3>
+              <h3 className="text-3xl font-bold text-slate-800 mb-6">Pourquoi nous choisir ?</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2" />
                   <div>
                     <h4 className="font-semibold text-slate-800">Expertise reconnue</h4>
-                    <p className="text-gray-600">Plus de 00 ans d'expérience dans le gros œuvre</p>
+                    <p className="text-gray-600">Plus de 17 ans d&apos;expérience dans le gros œuvre.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2" />
                   <div>
                     <h4 className="font-semibold text-slate-800">Matériaux de qualité</h4>
-                    <p className="text-gray-600">Sélection rigoureuse des meilleurs matériaux</p>
+                    <p className="text-gray-600">Sélection rigoureuse des meilleurs matériaux.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2" />
                   <div>
                     <h4 className="font-semibold text-slate-800">Respect des délais</h4>
-                    <p className="text-gray-600">Livraison dans les temps convenus</p>
+                    <p className="text-gray-600">Livraison des chantiers selon le calendrier annoncé.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2" />
                   <div>
-                    <h4 className="font-semibold text-slate-800">Garantie décennale</h4>
-                    <p className="text-gray-600">Tous nos travaux sont garantis</p>
+                    <h4 className="font-semibold text-slate-800">Respect de l&apos;environnement</h4>
+                    <p className="text-gray-600">Pratiques de chantier visant à limiter l&apos;impact environnemental.</p>
                   </div>
                 </div>
               </div>

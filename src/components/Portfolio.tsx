@@ -6,6 +6,7 @@ type MediaKind = 'image' | 'video';
 
 interface MediaItem {
   src: string;
+  previewSrc?: string;
   kind: MediaKind;
   name: string;
   extension: string;
@@ -28,6 +29,10 @@ type FolderMediaInfo = {
   media: MediaItem[];
   hasUnsupportedMedia: boolean;
   unsupportedExtensions: Set<string>;
+};
+
+type OptimizeOptions = {
+  width?: number;
 };
 
 interface ManifestMediaItem {
@@ -70,7 +75,7 @@ const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  const optimizeCloudinaryUrl = useCallback((url: string, kind: MediaKind) => {
+  const optimizeCloudinaryUrl = useCallback((url: string, kind: MediaKind, options: OptimizeOptions = {}) => {
     if (!url.startsWith('https://res.cloudinary.com/')) {
       return url;
     }
@@ -81,16 +86,32 @@ const Portfolio = () => {
     }
 
     const [, prefix, resourceType, rest] = match;
-    const hasTransform = rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_');
+    const hasTransform = rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_') || rest.startsWith('c_');
     if (hasTransform) {
       return url;
     }
 
-    const transformation = resourceType === 'image' || kind === 'image'
-      ? 'f_auto,q_auto:good,w_1600'
-      : 'f_auto,q_auto:good';
+    const width = options.width;
 
-    return `${prefix}${transformation}/${rest}`;
+    if (resourceType === 'image' || kind === 'image') {
+      const parts = ['f_auto', 'q_auto:eco', 'dpr_auto'];
+      if (width) {
+        parts.push(`c_limit`);
+        parts.push(`w_${width}`);
+      } else {
+        parts.push('c_limit');
+        parts.push('w_1400');
+      }
+      return `${prefix}${parts.join(',')}/${rest}`;
+    }
+
+    const videoParts = ['f_auto:video', 'q_auto:eco', 'vc_auto'];
+    if (width) {
+      videoParts.push(`c_limit`);
+      videoParts.push(`w_${width}`);
+    }
+
+    return `${prefix}${videoParts.join(',')}/${rest}`;
   }, []);
 
   const resolveMediaUrl = useCallback((url: string) => {
@@ -146,9 +167,15 @@ const Portfolio = () => {
           }
         };
 
+        const thumbnailUrl =
+          kind === 'image'
+            ? optimizeCloudinaryUrl(resolvedUrl, kind, { width: 700 })
+            : optimizeCloudinaryUrl(resolvedUrl, kind, { width: 720 });
+
         if (kind === 'image' && SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
           folderInfo.media.push({
             src: optimizedUrl,
+            previewSrc: thumbnailUrl,
             kind,
             name: item.name ?? `${extension}-image`,
             extension,
@@ -161,6 +188,7 @@ const Portfolio = () => {
         if (kind === 'video' && SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
           folderInfo.media.push({
             src: optimizedUrl,
+            previewSrc: thumbnailUrl,
             kind,
             name: item.name ?? `${extension}-video`,
             extension,
@@ -428,7 +456,7 @@ const Portfolio = () => {
                   {hasPreview && preview ? (
                     preview.kind === 'image' ? (
                       <img
-                        src={preview.src}
+                        src={preview.previewSrc ?? preview.src}
                         alt={project.title}
                         loading="lazy"
                         decoding="async"

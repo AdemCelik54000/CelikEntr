@@ -33,6 +33,7 @@ type FolderMediaInfo = {
 
 type OptimizeOptions = {
   width?: number;
+  quality?: string;
 };
 
 interface ManifestMediaItem {
@@ -86,28 +87,30 @@ const Portfolio = () => {
     }
 
     const [, prefix, resourceType, rest] = match;
-    const hasTransform = rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_') || rest.startsWith('c_');
+    const hasTransform =
+      rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_') || rest.startsWith('c_') || rest.startsWith('dpr_');
     if (hasTransform) {
       return url;
     }
 
     const width = options.width;
+    const quality = options.quality ?? 'q_auto:eco';
 
     if (resourceType === 'image' || kind === 'image') {
-      const parts = ['f_auto', 'q_auto:eco', 'dpr_auto'];
+      const parts = ['f_auto', quality, 'dpr_auto'];
       if (width) {
-        parts.push(`c_limit`);
+        parts.push('c_limit');
         parts.push(`w_${width}`);
       } else {
         parts.push('c_limit');
-        parts.push('w_1400');
+        parts.push('w_1200');
       }
       return `${prefix}${parts.join(',')}/${rest}`;
     }
 
-    const videoParts = ['f_auto:video', 'q_auto:eco', 'vc_auto'];
+    const videoParts = ['f_auto:video', quality, 'vc_auto'];
     if (width) {
-      videoParts.push(`c_limit`);
+      videoParts.push('c_limit');
       videoParts.push(`w_${width}`);
     }
 
@@ -169,8 +172,8 @@ const Portfolio = () => {
 
         const thumbnailUrl =
           kind === 'image'
-            ? optimizeCloudinaryUrl(resolvedUrl, kind, { width: 700 })
-            : optimizeCloudinaryUrl(resolvedUrl, kind, { width: 720 });
+            ? optimizeCloudinaryUrl(resolvedUrl, kind, { width: 600, quality: 'q_auto:low' })
+            : optimizeCloudinaryUrl(resolvedUrl, kind, { width: 640, quality: 'q_auto:low' });
 
         if (kind === 'image' && SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
           folderInfo.media.push({
@@ -386,6 +389,28 @@ const Portfolio = () => {
     if (currentMediaIndex >= selectedProject.media.length) {
       setCurrentMediaIndex(0);
     }
+  }, [selectedProject, currentMediaIndex]);
+
+  useEffect(() => {
+    if (!selectedProject || selectedProject.media.length <= 1) {
+      return;
+    }
+
+    const { media } = selectedProject;
+    const total = media.length;
+
+    const preloadIndex = (index: number) => {
+      const normalizedIndex = (index + total) % total;
+      const item = media[normalizedIndex];
+      if (!item || item.kind !== 'image') {
+        return;
+      }
+      const loader = new Image();
+      loader.src = item.src;
+    };
+
+    preloadIndex(currentMediaIndex + 1);
+    preloadIndex(currentMediaIndex - 1);
   }, [selectedProject, currentMediaIndex]);
 
   useEffect(() => {

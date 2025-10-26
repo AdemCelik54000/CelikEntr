@@ -53,6 +53,8 @@ const Hero = () => {
         <img
           src={heroImageUrl}
           alt="Chef de chantier devant un mur de briques avec bétonnière"
+          loading="eager"
+          decoding="async"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-slate-900/75" />

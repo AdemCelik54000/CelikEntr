@@ -16,31 +16,30 @@ const Contact = () => {
     event.preventDefault();
     setStatus('idle');
 
-    const payload = new FormData();
-    payload.append('form-name', 'devis');
-
-    Object.entries(formData).forEach(([key, value]) => {
-      payload.append(key, value);
-    });
+    const payload = new FormData(event.currentTarget);
+    payload.set('form-name', 'devis');
 
     if (files) {
+      payload.delete('fichiers');
       Array.from(files).forEach((file) => payload.append('fichiers', file));
     }
 
     try {
-      const response = await fetch('/', {
+      const actionUrl = event.currentTarget.action || '/?no-cache=1';
+      const response = await fetch(actionUrl, {
         method: 'POST',
         body: payload,
       });
 
-      if (!response.ok) {
-        throw new Error('Netlify form submission failed');
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setFiles(null);
+        event.currentTarget.reset();
+        return;
       }
 
-      setStatus('success');
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      setFiles(null);
-      event.currentTarget.reset();
+      throw new Error(`Netlify form submission failed with status ${response.status}`);
     } catch (error) {
       console.error(error);
       setStatus('error');
@@ -140,6 +139,7 @@ const Contact = () => {
             <form
               name="devis"
               method="POST"
+              action="/?no-cache=1"
               data-netlify="true"
               data-netlify-honeypot="bot-field"
               encType="multipart/form-data"

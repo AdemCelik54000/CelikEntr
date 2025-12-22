@@ -79,6 +79,7 @@ const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const preloadedImagesRef = useRef<Set<string>>(new Set());
+  const [remoteManifest, setRemoteManifest] = useState<MediaManifest | null>(null);
 
   const optimizeCloudinaryUrl = useCallback((url: string, kind: MediaKind, options: OptimizeOptions = {}) => {
     if (!url.startsWith('https://res.cloudinary.com/')) {
@@ -140,8 +141,42 @@ const Portfolio = () => {
     return url;
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const baseFolder = import.meta.env.VITE_CLOUDINARY_BASE_FOLDER || 'celik-portfolio';
+
+    const fetchManifest = async () => {
+      try {
+        const url = new URL('/.netlify/functions/cloudinary-media', window.location.origin);
+        url.searchParams.set('base', baseFolder);
+
+        const response = await fetch(url.toString(), { signal: controller.signal });
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as MediaManifest;
+        if (data && data.entries) {
+          setRemoteManifest(data);
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+      }
+    };
+
+    fetchManifest();
+
+    return () => controller.abort();
+  }, []);
+
+  const manifestData = useMemo(
+    () => (remoteManifest ?? (mediaManifest as MediaManifest)),
+    [remoteManifest]
+  );
+
   const folderMediaInfo = useMemo(() => {
-    const manifestData = mediaManifest as MediaManifest;
     const entries = manifestData?.entries ?? {};
     const info: Record<string, FolderMediaInfo> = {};
 
@@ -213,7 +248,7 @@ const Portfolio = () => {
     });
 
     return info;
-  }, [optimizeCloudinaryUrl, resolveMediaUrl]);
+  }, [manifestData, optimizeCloudinaryUrl, resolveMediaUrl]);
 
   const withMediaData = (folder: string) => {
     const entry = folderMediaInfo[folder];

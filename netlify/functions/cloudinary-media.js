@@ -1,0 +1,164 @@
+const { v2: cloudinary } = require('cloudinary');
+
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'svg', 'heic', 'heif']);
+const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
+const MAX_RESULTS = 500;
+
+function normalizeBaseFolder(value) {
+  if (!value) {
+    return 'celik-portfolio';
+  }
+
+  return value.replace(/^\/+|\/+$/g, '');
+}
+
+function ensureEntry(manifest, folderKey) {
+  if (!manifest.entries[folderKey]) {
+    manifest.entries[folderKey] = {
+      media: [],
+      hasUnsupportedMedia: false,
+      unsupportedExtensions: [],
+    };
+  }
+
+  return manifest.entries[folderKey];
+}
+
+function classifyExtension(extension, resourceType) {
+  if (resourceType === 'video') {
+    return VIDEO_EXTENSIONS.has(extension) ? 'video' : 'unsupported';
+  }
+
+  return IMAGE_EXTENSIONS.has(extension) ? 'image' : 'unsupported';
+}
+
+function toRelativeFolder(baseFolder, resourceFolder, publicId) {
+  if (resourceFolder && resourceFolder.startsWith(baseFolder)) {
+    const trimmed = resourceFolder.slice(baseFolder.length).replace(/^\/+/, '');
+    return trimmed;
+  }
+
+  if (publicId && publicId.startsWith(`${baseFolder}/`)) {
+    const withoutBase = publicId.slice(baseFolder.length + 1);
+    const lastSlash = withoutBase.lastIndexOf('/');
+    return lastSlash === -1 ? '' : withoutBase.slice(0, lastSlash);
+  }
+
+  return resourceFolder || '';
+}
+
+function toRelativePath(relativeFolder, publicId, extension) {
+  const filename = publicId.split('/').pop();
+  if (!filename) {
+    return '';
+  }
+
+  const nameWithExt = extension ? `${filename}.${extension}` : filename;
+  return relativeFolder ? `${relativeFolder}/${nameWithExt}` : nameWithExt;
+}
+
+async function fetchResources(resourceType, baseFolder) {
+  const allResources = [];
+  let nextCursor = undefined;
+
+  do {
+    const response = await cloudinary.api.resources({
+      type: 'upload',
+      prefix: `${baseFolder}/`,
+      resource_type: resourceType,
+      max_results: MAX_RESULTS,
+      next_cursor: nextCursor,
+    });
+
+    allResources.push(...(response.resources || []));
+    nextCursor = response.next_cursor;
+  } while (nextCursor);
+
+  return allResources;
+}
+
+function buildManifest(baseFolder, resources) {
+  const manifest = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    source: 'cloudinary',
+    entries: {},
+  };
+
+  resources.forEach((resource) => {
+    const extension = (resource.format || '').toLowerCase();
+    const kind = classifyExtension(extension, resource.resource_type);
+    const folderKey = toRelativeFolder(baseFolder, resource.folder || '', resource.public_id || '');
+    const entry = ensureEntry(manifest, folderKey);
+
+    if (kind === 'unsupported') {
+      entry.hasUnsupportedMedia = true;
+      if (extension && !entry.unsupportedExtensions.includes(extension)) {
+        entry.unsupportedExtensions.push(extension);
+      }
+      return;
+    }
+
+    const relativePath = toRelativePath(folderKey, resource.public_id || '', extension);
+    entry.media.push({
+      name: resource.public_id ? resource.public_id.split('/').pop() : resource.asset_id,
+      extension,
+      kind,
+      url: resource.secure_url,
+      publicId: resource.public_id || null,
+      relativePath,
+      bytes: resource.bytes ?? null,
+      width: resource.width ?? null,
+      height: resource.height ?? null,
+    });
+  });
+
+  Object.values(manifest.entries).forEach((entry) => {
+    entry.media.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    entry.unsupportedExtensions.sort();
+  });
+
+  return manifest;
+}
+
+exports.handler = async (event) => {
+  const baseFolder = normalizeBaseFolder(event.queryStringParameters?.base);
+  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Missing Cloudinary credentials.' }),
+    };
+  }
+
+  cloudinary.config({
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+
+  try {
+    const [images, videos] = await Promise.all([
+      fetchResources('image', baseFolder),
+      fetchResources('video', baseFolder),
+    ]);
+
+    const manifest = buildManifest(baseFolder, [...images, ...videos]);
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=60',
+      },
+      body: JSON.stringify(manifest),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message || 'Cloudinary request failed.' }),
+    };
+  }
+};

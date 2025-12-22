@@ -7,3 +7,6 @@
   for = "/*.ts"
   [headers.values]
     Content-Type = "application/typescript; charset=utf-8"
+
+[functions]
+  directory = "netlify/functions"

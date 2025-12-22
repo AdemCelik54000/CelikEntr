@@ -108,6 +108,7 @@ function buildManifest(baseFolder, resources) {
       bytes: resource.bytes ?? null,
       width: resource.width ?? null,
       height: resource.height ?? null,
+      createdAt: resource.created_at ?? null,
     });
   });
 

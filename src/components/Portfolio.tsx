@@ -12,6 +12,7 @@ interface MediaItem {
   extension: string;
   relativePath?: string;
   publicId?: string | null;
+  createdAt?: string | null;
 }
 
 interface Project {
@@ -46,6 +47,7 @@ interface ManifestMediaItem {
   bytes?: number | null;
   width?: number | null;
   height?: number | null;
+  createdAt?: string | null;
 }
 
 interface ManifestFolderEntry {
@@ -223,6 +225,7 @@ const Portfolio = () => {
             extension,
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
+            createdAt: item.createdAt ?? null,
           });
           return;
         }
@@ -236,6 +239,7 @@ const Portfolio = () => {
             extension,
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
+            createdAt: item.createdAt ?? null,
           });
           return;
         }
@@ -243,7 +247,20 @@ const Portfolio = () => {
         addUnsupported();
       });
 
-      folderInfo.media.sort((a, b) => a.name.localeCompare(b.name));
+      folderInfo.media.sort((a, b) => {
+        const aDate = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bDate = b.createdAt ? Date.parse(b.createdAt) : 0;
+
+        if (aDate && bDate && aDate !== bDate) {
+          return bDate - aDate;
+        }
+
+        if (aDate !== bDate) {
+          return bDate - aDate;
+        }
+
+        return a.name.localeCompare(b.name);
+      });
       info[folderKey] = folderInfo;
     });
 
@@ -264,6 +281,14 @@ const Portfolio = () => {
   };
 
   const projects: Project[] = [
+    {
+      id: 0,
+      title: 'Finalisations',
+      category: 'Finalisations',
+      folder: 'finalisations',
+      description: 'Chantiers termines et finitions exemplaires',
+      ...withMediaData('finalisations'),
+    },
     {
       id: 1,
       title: 'Fondations Fouilles',
@@ -372,6 +397,7 @@ const Portfolio = () => {
 
   const categories = [
     'Tous',
+    'Finalisations',
     'Fondations',
     'Murs & Cloisons',
     'Dalle Beton',

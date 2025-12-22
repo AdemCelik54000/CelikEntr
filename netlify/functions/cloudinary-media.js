@@ -1,6 +1,5 @@
 const { v2: cloudinary } = require('cloudinary');
 
-const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
 const MAX_RESULTS = 500;
 
 function normalizeBaseFolder(value) {
@@ -25,7 +24,7 @@ function ensureEntry(manifest, folderKey) {
 
 function classifyExtension(extension, resourceType) {
   if (resourceType === 'video') {
-    return VIDEO_EXTENSIONS.has(extension) ? 'video' : 'unsupported';
+    return 'video';
   }
 
   return 'image';

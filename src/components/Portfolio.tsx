@@ -227,12 +227,12 @@ const Portfolio = () => {
           return;
         }
 
-        if (kind === 'video' && SUPPORTED_VIDEO_EXTENSIONS.has(extension)) {
+        if (kind === 'video') {
           folderInfo.media.push({
             src: optimizedUrl,
             previewSrc: thumbnailUrl,
             kind,
-            name: item.name ?? `${extension}-video`,
+            name: item.name ?? `${extension || 'video'}`,
             extension,
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
@@ -736,7 +736,7 @@ const Portfolio = () => {
                             mettre a jour le catalogue avant de recharger la page.
                           </p>
                           <p className="text-gray-400 text-sm">
-                            Formats supportes : images (tous formats Cloudinary) et videos (mp4, webm, ogg)
+                            Formats supportes : images (tous formats Cloudinary) et videos (tous formats Cloudinary)
                           </p>
                         </>
                       )}

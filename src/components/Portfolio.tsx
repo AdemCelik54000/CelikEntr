@@ -214,12 +214,12 @@ const Portfolio = () => {
             ? optimizeCloudinaryUrl(resolvedUrl, kind, { width: 600, quality: 'q_auto:low' })
             : optimizeCloudinaryUrl(resolvedUrl, kind, { width: 640, quality: 'q_auto:low' });
 
-        if (kind === 'image' && SUPPORTED_IMAGE_EXTENSIONS.has(extension)) {
+        if (kind === 'image') {
           folderInfo.media.push({
             src: optimizedUrl,
             previewSrc: thumbnailUrl,
             kind,
-            name: item.name ?? `${extension}-image`,
+            name: item.name ?? `${extension || 'image'}`,
             extension,
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
@@ -736,7 +736,7 @@ const Portfolio = () => {
                             mettre a jour le catalogue avant de recharger la page.
                           </p>
                           <p className="text-gray-400 text-sm">
-                            Formats supportes : images ({Array.from(SUPPORTED_IMAGE_EXTENSIONS).join(', ')}) et videos (mp4, webm, ogg)
+                            Formats supportes : images (tous formats Cloudinary) et videos (mp4, webm, ogg)
                           </p>
                         </>
                       )}

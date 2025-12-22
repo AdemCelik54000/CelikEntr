@@ -1,6 +1,5 @@
 const { v2: cloudinary } = require('cloudinary');
 
-const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'svg', 'heic', 'heif']);
 const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'ogg']);
 const MAX_RESULTS = 500;
 
@@ -29,7 +28,7 @@ function classifyExtension(extension, resourceType) {
     return VIDEO_EXTENSIONS.has(extension) ? 'video' : 'unsupported';
   }
 
-  return IMAGE_EXTENSIONS.has(extension) ? 'image' : 'unsupported';
+  return 'image';
 }
 
 function toRelativeFolder(baseFolder, resourceFolder, publicId) {

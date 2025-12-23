@@ -10,10 +10,20 @@ function App() {
   return (
     <div className="min-h-screen">
       <Header />
-      <Hero />
-      <Services />
-      <Portfolio />
-      <Contact />
+      <main className="flex flex-col">
+        <div className="order-2 md:order-1">
+          <Hero />
+        </div>
+        <div className="order-3 md:order-2">
+          <Services />
+        </div>
+        <div className="order-1 md:order-3">
+          <Portfolio />
+        </div>
+        <div className="order-4 md:order-4">
+          <Contact />
+        </div>
+      </main>
       <Footer />
     </div>
   );

@@ -85,13 +85,13 @@ const Header = () => {
             <span>06 26 65 13 08</span>
           </a>
           <a
-            href="mailto:entreprisemuratcelik@free.fr"
+            href="mailto:entreprisecelikbatiment@gmail.com"
             className={`flex items-center space-x-2 text-sm transition-colors hover:text-orange-500 ${
               isScrolled ? 'text-slate-800' : 'text-white'
             }`}
           >
             <Mail className="h-4 w-4 text-orange-500" />
-            <span>entreprisemuratcelik@free.fr</span>
+            <span>entreprisecelikbatiment@gmail.com</span>
           </a>
         </div>
 
@@ -123,9 +123,9 @@ const Header = () => {
                 <Phone className="h-4 w-4 text-orange-500" />
                 <span>06 26 65 13 08</span>
               </a>
-              <a className="flex items-center space-x-2 break-all" href="mailto:entreprisemuratcelik@free.fr">
+              <a className="flex items-center space-x-2 break-all" href="mailto:entreprisecelikbatiment@gmail.com">
                 <Mail className="h-4 w-4 text-orange-500" />
-                <span>entreprisemuratcelik@free.fr</span>
+                <span>entreprisecelikbatiment@gmail.com</span>
               </a>
             </div>
           </div>
@@ -136,3 +136,4 @@ const Header = () => {
 };
 
 export default Header;
+

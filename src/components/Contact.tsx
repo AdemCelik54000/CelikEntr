@@ -96,7 +96,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Email</h4>
-                    <p className="text-gray-600">entreprisemuratcelik@free.fr</p>
+                    <p className="text-gray-600">entreprisecelikbatiment@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -298,3 +298,4 @@ const Contact = () => {
 };
 
 export default Contact;
+

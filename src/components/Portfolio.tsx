@@ -396,7 +396,6 @@ const Portfolio = () => {
     ];
 
   const categories = [
-    'Tous',
     'Finalisations',
     'Fondations',
     'Murs & Cloisons',
@@ -405,12 +404,9 @@ const Portfolio = () => {
     'Etancheite & Terrassement',
     'Escalier',
   ];
-  const [activeCategory, setActiveCategory] = useState('Tous');
+  const [activeCategory, setActiveCategory] = useState('Finalisations');
 
-  const filteredProjects =
-    activeCategory === 'Tous'
-      ? projects
-      : projects.filter((project) => project.category === activeCategory);
+  const filteredProjects = projects.filter((project) => project.category === activeCategory);
 
   const selectedUnsupportedList = selectedProject
     ? selectedProject.unsupportedExtensions.length > 0

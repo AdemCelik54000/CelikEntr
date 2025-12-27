@@ -47,8 +47,8 @@ const Header = () => {
           onClick={() => scrollToSection('accueil')}
           className="flex items-center space-x-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
         >
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-orange-500 shadow-lg shadow-orange-500/30">
-            <span className="text-lg font-bold text-white">C</span>
+          <div className="grid h-11 w-11 place-items-center rounded-xl bg-white shadow-lg shadow-orange-500/30">
+            <img src="/logo.png" alt="Celik Bâtiment" className="h-9 w-9 object-contain" />
           </div>
           <div className="leading-tight">
             <h1 className={`text-lg font-semibold sm:text-xl ${isScrolled ? 'text-slate-800' : 'text-white'}`}>

@@ -49,7 +49,7 @@ const Header = () => {
         >
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-white shadow-lg shadow-orange-500/30">
             <img
-              src="https://res.cloudinary.com/dq7d6rmbp/image/upload/v1766871018/celik-portfolio/logo.png"
+              src="https://res.cloudinary.com/dq7d6rmbp/image/upload/c_crop,w_700,g_auto/v1766871018/celik-portfolio/logo.png"
               alt="Celik Bâtiment"
               className="h-9 w-9 object-contain"
             />

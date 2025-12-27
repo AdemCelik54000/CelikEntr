@@ -3,6 +3,24 @@ import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin } from 'lucid
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const handleInstagramClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const appUrl = 'instagram://user?username=celik.batiment';
+    const webUrl = 'https://www.instagram.com/celik.batiment/';
+    const fallbackTimer = window.setTimeout(() => {
+      window.open(webUrl, '_blank', 'noopener,noreferrer');
+    }, 900);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        window.clearTimeout(fallbackTimer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.location.href = appUrl;
+  };
 
   return (
     <footer className="bg-slate-800 text-white">
@@ -29,6 +47,9 @@ const Footer = () => {
               </a>
               <a
                 href="https://www.instagram.com/celik.batiment/"
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleInstagramClick}
                 className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-orange-500 transition-colors"
               >
                 <Instagram size={20} />

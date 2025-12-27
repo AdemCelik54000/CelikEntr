@@ -92,7 +92,7 @@ const Contact = () => {
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
-                    <Mail className="h-6 w-6 text-white" />
+                    <Mail className="h-6 w-7 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800">Email</h4>

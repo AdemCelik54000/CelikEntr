@@ -18,8 +18,7 @@ const Header = () => {
   const navItems = useMemo(
     () => [
       { id: 'accueil', label: 'Accueil' },
-      { id: 'services', label: 'Services' },
-      { id: 'realisations', label: 'Réalisations' },
+      { id: 'services', label: 'Services / R\u00e9alisations' },
       { id: 'contact', label: 'Contact' },
     ],
     []
@@ -140,4 +139,6 @@ const Header = () => {
 };
 
 export default Header;
+
+
 

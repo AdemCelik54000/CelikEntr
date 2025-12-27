@@ -683,10 +683,13 @@ const Services = () => {
                         onClick={() => toggleService(service.key)}
                         aria-expanded={isExpanded}
                         aria-controls={`service-panel-${service.key}`}
-                        className={`group transform rounded-lg bg-white p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
+                        className={`group relative transform rounded-lg bg-white p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
                           isExpanded ? 'ring-2 ring-orange-500' : ''
                         }`}
                       >
+                        <span className="absolute right-4 top-4 rounded-md bg-slate-200/70 px-2 py-1 text-[11px] text-slate-600">
+                          Cliquez pour ouvrir
+                        </span>
                         <div className="mb-6 transition-transform duration-300 group-hover:scale-110">{service.icon}</div>
                         <h3 className="mb-4 text-xl font-bold text-slate-800">{service.title}</h3>
                         <p className="leading-relaxed text-gray-600">{service.description}</p>

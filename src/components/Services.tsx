@@ -6,6 +6,7 @@ import {
   Wrench,
   Building,
   Shield,
+  BadgeCheck,
   Truck,
   X,
   ChevronLeft,
@@ -126,7 +127,7 @@ const Services = () => {
         icon: <Wrench className="h-12 w-12 text-orange-500" />,
         title: 'R\u00e9novation',
         description: 'R\u00e9novation compl\u00e8te, extension et sur\u00e9l\u00e9vation de b\u00e2timents existants.',
-        categories: ['R\u00e9novation', 'Finalisations'],
+        categories: ['R\u00e9novation'],
       },
       {
         key: 'etancheite-terrassement',
@@ -522,6 +523,17 @@ const Services = () => {
     return map;
   }, [projects]);
 
+  const finalisationsProject = useMemo(
+    () => projects.find((project) => project.category === 'Finalisations') ?? null,
+    [projects]
+  );
+
+  const finalisationsPreview = finalisationsProject
+    ? finalisationsProject.media.find((item) => item.kind === 'image') ??
+      finalisationsProject.media.find((item) => item.kind === 'video') ??
+      null
+    : null;
+
   const getProjectsForService = useCallback(
     (categories: string[]) => {
       const combined: Project[] = [];
@@ -665,6 +677,79 @@ const Services = () => {
         </div>
 
         <div className="space-y-8">
+          {finalisationsProject && (
+            <div className="rounded-2xl bg-white p-6 shadow-xl md:p-8">
+              <div className="grid items-center gap-8 md:grid-cols-[1.2fr,0.8fr]">
+                <div>
+                  <div className="flex items-center gap-3 text-orange-500">
+                    <BadgeCheck className="h-10 w-10" />
+                  </div>
+                  <h3 className="mt-4 text-3xl font-bold text-slate-800">Finalisation</h3>
+                  <p className="mt-3 text-lg text-gray-600">
+                    {
+                      'Finalisation de nos projets termin\u00e9s, avec nos clients et leurs maisons achev\u00e9es.'
+                    }
+                  </p>
+                  <p className="mt-3 text-gray-500">
+                    {'Cliquez sur la galerie pour agrandir et d\u00e9filer les photos.'}
+                  </p>
+                </div>
+
+                <div
+                  className="group relative h-64 w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg md:h-72 md:w-72 md:justify-self-end"
+                  onClick={() => openGallery(finalisationsProject)}
+                >
+                  {finalisationsPreview ? (
+                    finalisationsPreview.kind === 'image' ? (
+                      <img
+                        src={finalisationsPreview.previewSrc ?? finalisationsPreview.src}
+                        alt={finalisationsProject.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <video
+                        src={finalisationsPreview.src}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    )
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-center text-white">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white">
+                        <ImageIcon className="h-6 w-6" />
+                      </div>
+                      <p className="text-sm font-semibold">{'Ajoutez vos images ou vid\u00e9os'}</p>
+                      <p className="text-xs text-gray-300">
+                        Placez-les dans <span className="font-mono">public/images/finalisations</span>
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="space-y-2 text-center text-white">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border-2 border-white">
+                        <ImageIcon className="h-6 w-6" />
+                      </div>
+                      <p className="text-sm font-medium">Voir la galerie</p>
+                    </div>
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
+                    <div className="text-white">
+                      <h3 className="text-lg font-semibold">{finalisationsProject.title}</h3>
+                      <p className="text-xs text-gray-200">{finalisationsProject.description}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {serviceRows.map((row, rowIndex) => {
             const expandedInRow = row.find((service) => service.key === expandedService) ?? null;
             const serviceProjects = expandedInRow ? getProjectsForService(expandedInRow.categories) : [];
@@ -792,9 +877,6 @@ const Services = () => {
                                   </div>
 
                                   <div className="absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
-                                    <span className="inline-block rounded-full bg-orange-500 px-3 py-1 text-xs font-medium text-white">
-                                      {project.category}
-                                    </span>
                                     <div className="text-white">
                                       <h3 className="text-lg font-semibold">{project.title}</h3>
                                       <p className="text-xs text-gray-200">{project.description}</p>

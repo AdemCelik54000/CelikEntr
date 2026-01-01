@@ -62,10 +62,10 @@ const Hero = () => {
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center text-white">
         <h1 className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Celik <span className="text-orange-500">Bâtiment</span>
+          CELIK <span className="text-orange-500">Bâtiments</span>
         </h1>
         <p className="mt-6 text-lg sm:text-xl md:text-2xl">
-          Spécialistes du gros œuvre depuis plus de 17 ans
+          Entreprise CELIK dirigée par Murat CELIK, spécialistes du gros œuvre depuis plus de 17 ans
         </p>
         <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
           Fondations, murs, dalle béton, rénovation : nous donnons vie à vos projets avec expertise, accompagnement sur

@@ -131,8 +131,8 @@ const Contact = () => {
             <div className="rounded-lg bg-white p-8 shadow-lg">
               <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d’intervention</h3>
               <p className="mb-4 text-gray-600">
-                Nous intervenons dans un rayon de 80&nbsp;km autour d’Épinal et Neufchâteau pour vos travaux de
-                maçonnerie et de gros œuvre.
+                Nous intervenons dans les Vosges et le Grand Est, autour d’Épinal, Neufchâteau et Mirecourt, pour vos
+                travaux de maçonnerie et de gros œuvre.
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                 <div>Épinal</div>

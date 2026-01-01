@@ -40,8 +40,8 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-gray-400 mb-6">
-              Specialisation du Gros Oeuvre depuis plus de 17 ans, nous realisons tous vos projets
-              de construction avec expertise et passion.
+              CELIK Batiments (Entreprise CELIK) realise vos projets de construction en gros oeuvre depuis plus de 17
+              ans, avec expertise et passion.
             </p>
             <div className="flex items-center gap-4 mt-8">
               <a

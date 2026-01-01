@@ -65,6 +65,7 @@ async function fetchResources(resourceType, baseFolder) {
       prefix: `${baseFolder}/`,
       resource_type: resourceType,
       max_results: MAX_RESULTS,
+      context: true,
       next_cursor: nextCursor,
     });
 
@@ -88,6 +89,9 @@ function buildManifest(baseFolder, resources) {
     const kind = classifyExtension(extension, resource.resource_type);
     const folderKey = toRelativeFolder(baseFolder, resource.folder || '', resource.public_id || '');
     const entry = ensureEntry(manifest, folderKey);
+    const context = resource.context?.custom || resource.context || {};
+    const positionRaw = context?.position;
+    const position = Number.isFinite(Number(positionRaw)) ? Number(positionRaw) : null;
 
     if (kind === 'unsupported') {
       entry.hasUnsupportedMedia = true;
@@ -109,11 +113,28 @@ function buildManifest(baseFolder, resources) {
       width: resource.width ?? null,
       height: resource.height ?? null,
       createdAt: resource.created_at ?? null,
+      position,
     });
   });
 
   Object.values(manifest.entries).forEach((entry) => {
-    entry.media.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    const media = entry.media ?? [];
+    const hasPositions = media.length > 0 && media.every((item) => Number.isFinite(item.position));
+    if (hasPositions) {
+      media.sort((a, b) => (a.position || 0) - (b.position || 0));
+    } else {
+      media.sort((a, b) => {
+        const aDate = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bDate = b.createdAt ? Date.parse(b.createdAt) : 0;
+        if (aDate && bDate && aDate !== bDate) {
+          return aDate - bDate;
+        }
+        if (aDate !== bDate) {
+          return aDate - bDate;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    }
     entry.unsupportedExtensions.sort();
   });
 

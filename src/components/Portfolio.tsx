@@ -13,6 +13,7 @@ interface MediaItem {
   relativePath?: string;
   publicId?: string | null;
   createdAt?: string | null;
+  position?: number | null;
 }
 
 interface Project {
@@ -48,6 +49,7 @@ interface ManifestMediaItem {
   width?: number | null;
   height?: number | null;
   createdAt?: string | null;
+  position?: number | null;
 }
 
 interface ManifestFolderEntry {
@@ -226,6 +228,7 @@ const Portfolio = () => {
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
             createdAt: item.createdAt ?? null,
+            position: item.position ?? null,
           });
           return;
         }
@@ -240,6 +243,7 @@ const Portfolio = () => {
             relativePath: item.relativePath,
             publicId: item.publicId ?? null,
             createdAt: item.createdAt ?? null,
+            position: item.position ?? null,
           });
           return;
         }
@@ -247,20 +251,27 @@ const Portfolio = () => {
         addUnsupported();
       });
 
-      folderInfo.media.sort((a, b) => {
-        const aDate = a.createdAt ? Date.parse(a.createdAt) : 0;
-        const bDate = b.createdAt ? Date.parse(b.createdAt) : 0;
+      const hasPositions =
+        folderInfo.media.length > 0 &&
+        folderInfo.media.every((mediaItem) => Number.isFinite(mediaItem.position));
+      if (hasPositions) {
+        folderInfo.media.sort((a, b) => (a.position || 0) - (b.position || 0));
+      } else {
+        folderInfo.media.sort((a, b) => {
+          const aDate = a.createdAt ? Date.parse(a.createdAt) : 0;
+          const bDate = b.createdAt ? Date.parse(b.createdAt) : 0;
 
-        if (aDate && bDate && aDate !== bDate) {
-          return bDate - aDate;
-        }
+          if (aDate && bDate && aDate !== bDate) {
+            return aDate - bDate;
+          }
 
-        if (aDate !== bDate) {
-          return bDate - aDate;
-        }
+          if (aDate !== bDate) {
+            return aDate - bDate;
+          }
 
-        return a.name.localeCompare(b.name);
-      });
+          return a.name.localeCompare(b.name);
+        });
+      }
       info[folderKey] = folderInfo;
     });
 

@@ -16,6 +16,7 @@ import {
   Play,
 } from 'lucide-react';
 import mediaManifest from '../data/media-manifest.json';
+import ProgressiveImage from './ProgressiveImage';
 
 type ManifestMedia = {
   kind?: string;
@@ -207,11 +208,20 @@ const Services = () => {
     }
 
     const [, prefix, resourceType, rest] = match;
-    const hasTransform =
-      rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_') || rest.startsWith('c_') || rest.startsWith('dpr_');
-    if (hasTransform) {
-      return url;
-    }
+
+    const injectTransform = (transform: string) => {
+      const segments = rest.split('/').filter(Boolean);
+      const versionIndex = segments.findIndex((segment) => /^v\d+$/.test(segment));
+
+      if (versionIndex === -1) {
+        return `${prefix}${transform}/${rest}`;
+      }
+
+      const existing = segments.slice(0, versionIndex);
+      const after = segments.slice(versionIndex).join('/');
+      const combined = existing.includes(transform) ? [...existing, after] : [...existing, transform, after];
+      return `${prefix}${combined.join('/')}`;
+    };
 
     const width = options.width;
     const quality = options.quality ?? 'q_auto:eco';
@@ -225,7 +235,8 @@ const Services = () => {
         parts.push('c_limit');
         parts.push('w_1200');
       }
-      return `${prefix}${parts.join(',')}/${rest}`;
+
+      return injectTransform(parts.join(','));
     }
 
     const videoParts = ['f_auto:video', quality, 'vc_auto'];
@@ -234,7 +245,7 @@ const Services = () => {
       videoParts.push(`w_${width}`);
     }
 
-    return `${prefix}${videoParts.join(',')}/${rest}`;
+    return injectTransform(videoParts.join(','));
   }, []);
 
   const resolveMediaUrl = useCallback((url: string) => {
@@ -260,19 +271,47 @@ const Services = () => {
     const controller = new AbortController();
     const baseFolder = import.meta.env.VITE_CLOUDINARY_BASE_FOLDER || 'celik-portfolio';
 
+    const cacheKey = `celik.mediaManifest.${baseFolder}`;
+    const cachedRaw = localStorage.getItem(cacheKey);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw) as { ts: number; data: RemoteMediaManifest };
+        const ageMs = Date.now() - (cached.ts || 0);
+        if (cached?.data?.entries && ageMs < 1000 * 60 * 60 * 12) {
+          setRemoteManifest(cached.data);
+        }
+      } catch {
+        // ignore cache parse errors
+      }
+    }
+
     const fetchManifest = async () => {
       try {
-        const url = new URL('/.netlify/functions/cloudinary-media', window.location.origin);
-        url.searchParams.set('base', baseFolder);
-
-        const response = await fetch(url.toString(), { signal: controller.signal });
-        if (!response.ok) {
-          return;
+        const candidates: string[] = [window.location.origin];
+        const siteUrl = import.meta.env.VITE_SITE_URL as string | undefined;
+        if (siteUrl && /^https?:\/\//i.test(siteUrl) && !candidates.includes(siteUrl)) {
+          candidates.push(siteUrl);
         }
 
-        const data = (await response.json()) as RemoteMediaManifest;
-        if (data && data.entries) {
-          setRemoteManifest(data);
+        for (const origin of candidates) {
+          const url = new URL('/.netlify/functions/cloudinary-media', origin);
+          url.searchParams.set('base', baseFolder);
+
+          const response = await fetch(url.toString(), { signal: controller.signal });
+          if (!response.ok) {
+            continue;
+          }
+
+          const data = (await response.json()) as RemoteMediaManifest;
+          if (data && data.entries) {
+            setRemoteManifest(data);
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+            } catch {
+              // ignore quota
+            }
+            return;
+          }
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -712,12 +751,14 @@ const Services = () => {
                 >
                   {finalisationsPreview ? (
                     finalisationsPreview.kind === 'image' ? (
-                      <img
-                        src={finalisationsPreview.previewSrc ?? finalisationsPreview.src}
+                      <ProgressiveImage
+                        src={finalisationsPreview.src}
+                        previewSrc={finalisationsPreview.previewSrc}
                         alt={finalisationsProject.title}
                         loading="lazy"
                         decoding="async"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full"
+                        imgClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <video
@@ -838,12 +879,14 @@ const Services = () => {
                                 <div className="relative overflow-hidden rounded-lg shadow-lg">
                                   {hasPreview && preview ? (
                                     preview.kind === 'image' ? (
-                                      <img
-                                        src={preview.previewSrc ?? preview.src}
+                                      <ProgressiveImage
+                                        src={preview.src}
+                                        previewSrc={preview.previewSrc}
                                         alt={project.title}
                                         loading="lazy"
                                         decoding="async"
-                                        className="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                        className="h-56 w-full"
+                                        imgClassName="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                                       />
                                     ) : (
                                       <video
@@ -944,12 +987,13 @@ const Services = () => {
             </div>
 
             <div className="relative overflow-hidden rounded-2xl shadow-xl">
-              <img
+              <ProgressiveImage
                 src={aboutImageUrl}
                 alt={'\u00c9quipe Celik B\u00e2timent sur un chantier'}
                 loading="lazy"
                 decoding="async"
-                className="h-64 w-full object-cover md:h-full"
+                className="h-64 w-full md:h-full"
+                imgClassName="h-64 w-full object-cover md:h-full"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/40 via-transparent to-transparent" />
             </div>
@@ -989,27 +1033,16 @@ const Services = () => {
                       <div className="flex max-h-[75vh] max-w-[min(90vw,1100px)] items-center justify-center">
                         {selectedProject.media[currentMediaIndex].kind === 'image' ? (
                           <>
-                            <img
+                            <ProgressiveImage
                               src={selectedProject.media[currentMediaIndex].src}
+                              previewSrc={selectedProject.media[currentMediaIndex].previewSrc}
                               alt={selectedProject.title}
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 60vw"
-                              className="h-auto max-h-[75vh] w-auto max-w-[90vw] rounded-2xl bg-black/10 object-contain shadow-2xl"
-                              onError={(event) => {
-                                event.currentTarget.style.display = 'none';
-                                const fallback = event.currentTarget.nextElementSibling as HTMLDivElement | null;
-                                if (fallback) {
-                                  fallback.style.display = 'flex';
-                                }
-                              }}
+                              className="max-h-[75vh] max-w-[90vw] w-auto h-auto rounded-2xl bg-black/10 shadow-2xl"
+                              imgClassName="max-h-[75vh] max-w-[90vw] w-auto h-auto rounded-2xl bg-black/10 object-contain shadow-2xl"
                             />
-                            <div className="absolute inset-0 hidden flex-col items-center justify-center gap-3 rounded-2xl bg-slate-900/80 px-6 text-center text-white">
-                              <p className="text-xl font-semibold">Image non disponible</p>
-                              <p className="text-sm text-gray-300">
-                                {'V\u00e9rifiez le format et l\u0027emplacement du fichier puis r\u00e9essayez.'}
-                              </p>
-                            </div>
                           </>
                         ) : (
                           <>

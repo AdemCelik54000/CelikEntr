@@ -1,4 +1,4 @@
-const { v2: cloudinary } = require('cloudinary');
+import { v2 as cloudinary } from 'cloudinary';
 
 const MAX_RESULTS = 500;
 
@@ -93,14 +93,6 @@ function buildManifest(baseFolder, resources) {
     const positionRaw = context?.position;
     const position = Number.isFinite(Number(positionRaw)) ? Number(positionRaw) : null;
 
-    if (kind === 'unsupported') {
-      entry.hasUnsupportedMedia = true;
-      if (extension && !entry.unsupportedExtensions.includes(extension)) {
-        entry.unsupportedExtensions.push(extension);
-      }
-      return;
-    }
-
     const relativePath = toRelativePath(folderKey, resource.public_id || '', extension);
     entry.media.push({
       name: resource.public_id ? resource.public_id.split('/').pop() : resource.asset_id,
@@ -141,14 +133,38 @@ function buildManifest(baseFolder, resources) {
   return manifest;
 }
 
-exports.handler = async (event) => {
+export async function handler(event) {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+      body: '',
+    };
+  }
+
   const baseFolder = normalizeBaseFolder(event.queryStringParameters?.base);
   const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
 
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Missing Cloudinary credentials.' }),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({
+        error: 'Missing Cloudinary credentials.',
+        missing: {
+          CLOUDINARY_CLOUD_NAME: !CLOUDINARY_CLOUD_NAME,
+          CLOUDINARY_API_KEY: !CLOUDINARY_API_KEY,
+          CLOUDINARY_API_SECRET: !CLOUDINARY_API_SECRET,
+        },
+        hint: 'Create a local .env with CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET for netlify dev.',
+      }),
     };
   }
 
@@ -172,13 +188,18 @@ exports.handler = async (event) => {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=60',
+        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify(manifest),
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message || 'Cloudinary request failed.' }),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({ error: error?.message || 'Cloudinary request failed.' }),
     };
   }
-};
+}

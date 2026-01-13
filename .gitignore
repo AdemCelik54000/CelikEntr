@@ -6,11 +6,49 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+debug.log*
+
+# Runtime / PID
+*.pid
+*.pid.lock
 
 node_modules
 dist
 dist-ssr
 *.local
+
+# Netlify local/dev artifacts
+.netlify/
+
+# Vite / tooling caches
+.vite/
+.eslintcache
+*.tsbuildinfo
+coverage/
+.nyc_output/
+
+# Package manager caches
+.npm/
+.pnpm-store/
+.yarn/
+.pnp.*
+
+# Other tool caches
+.cache/
+.parcel-cache/
+.turbo/
+
+# OS / temp
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+$RECYCLE.BIN/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
 
 # Editor directories and files
 .vscode/*
@@ -22,5 +60,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (never commit secrets)
 .env
-public/images/
+.env.*
+!.env.example
+!.env.template
+
+# Media folders (keep repo light). Remove these rules if you want to version assets.
+public/images/*
+!public/images/.gitkeep
+!public/images/README.md
+
+# Optional: local media dumps (generated/too heavy)
+public/media/*
+public/uploads/*

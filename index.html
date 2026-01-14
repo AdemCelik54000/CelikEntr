@@ -3,7 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- iOS Safari: allow content to extend into the notch area -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Browser UI color (mainly Android Chrome, but safe to include) -->
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- When installed to Home Screen (PWA/standalone), keep status bar translucent -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>CELIK Bâtiments – Entreprise de Maçonnerie | Murat CELIK – Vosges & Grand Est</title>
     <meta
       name="description"

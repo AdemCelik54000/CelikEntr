@@ -38,7 +38,13 @@ const Header = () => {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 shadow-lg backdrop-blur' : 'bg-slate-900/40 backdrop-blur-md'
+        /*
+          iOS safe area: padding-top paints the notch/status-bar region with the SAME background
+          as the header (and it changes automatically when the header background changes).
+        */
+        isScrolled
+          ? 'bg-[var(--header-bg-scrolled)] shadow-lg backdrop-blur pt-[env(safe-area-inset-top)]'
+          : 'bg-[var(--header-bg-top)] backdrop-blur-md pt-[env(safe-area-inset-top)]'
       }`}
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:py-4">

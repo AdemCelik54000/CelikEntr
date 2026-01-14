@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  iOS Safari safe-area + global background
+  - Prevents the notch/status-bar region from showing a white default background
+  - Uses CSS variables so colors are easy to customize in one place
+*/
+:root {
+  /* Customize this to match your site background (prevents iOS "white" flash / overscroll). */
+  --app-bg: #0f172a; /* slate-900 */
+
+  /* Customizable header backgrounds (used in Header.tsx via Tailwind arbitrary values). */
+  --header-bg-top: rgb(15 23 42 / 0.4);
+  --header-bg-scrolled: rgb(255 255 255 / 0.95);
+
+  /* Safe-area insets (notch / Dynamic Island / home indicator). */
+  --safe-top: env(safe-area-inset-top);
+  --safe-right: env(safe-area-inset-right);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+}
+
+html,
+body {
+  height: 100%;
+  background-color: var(--app-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* React root should also never be transparent/white. */
+#root {
+  min-height: 100dvh;
+  background-color: var(--app-bg);
+}
+
 @layer components {
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out forwards;

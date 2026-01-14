@@ -43,8 +43,8 @@ const Header = () => {
           as the header (and it changes automatically when the header background changes).
         */
         isScrolled
-          ? 'bg-[var(--header-bg-scrolled)] shadow-lg backdrop-blur pt-[env(safe-area-inset-top)]'
-          : 'bg-[var(--header-bg-top)] backdrop-blur-md pt-[env(safe-area-inset-top)]'
+          ? "bg-[var(--header-bg-scrolled)] shadow-lg backdrop-blur pt-[env(safe-area-inset-top)] before:content-[''] before:fixed before:top-0 before:left-0 before:right-0 before:z-[-1] before:h-[env(safe-area-inset-top)] before:bg-[var(--header-bg-scrolled)]"
+          : "bg-[var(--header-bg-top)] backdrop-blur-md pt-[env(safe-area-inset-top)] before:content-[''] before:fixed before:top-0 before:left-0 before:right-0 before:z-[-1] before:h-[env(safe-area-inset-top)] before:bg-[var(--header-bg-top)]"
       }`}
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:py-4">

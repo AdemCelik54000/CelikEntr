@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Props = {
   src: string;
@@ -21,12 +21,22 @@ export default function ProgressiveImage({
   sizes,
   decoding = 'async',
 }: Props) {
+  const mainImgRef = useRef<HTMLImageElement | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     setIsLoaded(false);
     setHasError(false);
+  }, [src]);
+
+  // Safari/iOS edge-case: when an image is served from cache, the load event can be missed.
+  // If the image is already complete, mark it as loaded to stop the placeholder from pulsing forever.
+  useEffect(() => {
+    const img = mainImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
   }, [src]);
 
   const showPreview = Boolean(previewSrc && previewSrc !== src);
@@ -54,12 +64,12 @@ export default function ProgressiveImage({
         />
       )}
 
-      {!isLoaded && !hasError && (
-        <div className="absolute inset-0 animate-pulse bg-slate-200/60" />
-      )}
+      {/* If a preview image exists, it already acts as the placeholder; avoid a light pulsing layer. */}
+      {!isLoaded && !hasError && !showPreview && <div className="absolute inset-0 animate-pulse bg-slate-900/10" />}
 
       {!hasError ? (
         <img
+          ref={mainImgRef}
           src={src}
           alt={alt}
           className={`relative h-full w-full object-cover transition-opacity duration-500 ${

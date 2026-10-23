@@ -1,142 +1,158 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Menu, X, Phone, Mail } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Menu, X, Phone, ArrowRight } from 'lucide-react';
+import { CONTACT, LOGO_URL } from '../data/catalog';
+
+const NAV_ITEMS = [
+  { id: 'realisations', label: 'Réalisations' },
+  { id: 'services', label: 'Services' },
+  { id: 'entreprise', label: "L'entreprise" },
+  { id: 'contact', label: 'Contact' },
+];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const progressRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setIsScrolled(window.scrollY > 40);
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+      }
     };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      if (!frame) {
+        frame = requestAnimationFrame(update);
+      }
+    };
+    update();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
-  const navItems = useMemo(
-    () => [
-      { id: 'accueil', label: 'Accueil' },
-      { id: 'services', label: 'Services / R\u00e9alisations' },
-      { id: 'contact', label: 'Contact' },
-    ],
-    []
-  );
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const offset = window.innerWidth < 768 ? 80 : 96;
-      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-      const targetPosition = elementPosition - offset;
-      window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-    }
-    setIsMenuOpen(false);
-  };
+  const solid = isScrolled || isMenuOpen;
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        /*
-          iOS safe area: padding-top paints the notch/status-bar region with the SAME background
-          as the header (and it changes automatically when the header background changes).
-        */
-        isScrolled
-          ? "bg-[var(--header-bg-scrolled)] shadow-lg backdrop-blur pt-[env(safe-area-inset-top)] before:content-[''] before:fixed before:top-0 before:left-0 before:right-0 before:z-[49] before:pointer-events-none before:h-[env(safe-area-inset-top)] before:bg-[var(--header-bg-scrolled)]"
-          : "bg-[var(--header-bg-top)] backdrop-blur-md pt-[env(safe-area-inset-top)] before:content-[''] before:fixed before:top-0 before:left-0 before:right-0 before:z-[49] before:pointer-events-none before:h-[env(safe-area-inset-top)] before:bg-[var(--header-bg-top)]"
+      className={`header-enter fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)] transition-colors duration-300 ${
+        solid ? 'bg-white/90 shadow-[0_1px_0_rgba(11,26,48,0.08)] backdrop-blur-xl' : 'bg-transparent'
       }`}
     >
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
-        <button
-          onClick={() => scrollToSection('accueil')}
-          className="flex items-center space-x-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-        >
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-white shadow-lg shadow-orange-500/30">
-            <img
-              src="https://res.cloudinary.com/dq7d6rmbp/image/upload/c_crop,w_700,g_auto/v1766871018/celik-portfolio/logo.png"
-              alt="Celik Bâtiment"
-              className="h-9 w-9 object-contain"
-            />
-          </div>
-          <div className="leading-tight">
-            <h1 className={`text-lg font-semibold sm:text-xl ${isScrolled ? 'text-slate-800' : 'text-white'}`}>
+      <span
+        ref={progressRef}
+        aria-hidden="true"
+        className={`absolute inset-x-0 bottom-0 h-[2px] origin-left bg-brand transition-opacity duration-300 ${
+          solid && !isMenuOpen ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{ transform: 'scaleX(0)' }}
+      />
+      <div className="mx-auto flex h-16 w-full max-w-site items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6">
+        <a href="#accueil" className="group flex min-w-0 items-center gap-3" onClick={() => setIsMenuOpen(false)}>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-md ring-1 ring-black/5">
+            <img src={LOGO_URL} alt="" className="h-9 w-9 object-contain transition-transform duration-500 group-hover:rotate-[-8deg] group-hover:scale-110" />
+          </span>
+          <span className="min-w-0 leading-tight">
+            <span
+              className={`block truncate font-display text-[17px] font-extrabold tracking-tight transition-colors ${
+                solid ? 'text-ink' : 'text-white'
+              }`}
+            >
               Celik Bâtiment
-            </h1>
-            <p className={`text-xs sm:text-sm ${isScrolled ? 'text-slate-500' : 'text-slate-200'}`}>
-              Gros œuvre &amp; Construction
-            </p>
-          </div>
-        </button>
+            </span>
+            <span className={`block truncate text-[12px] font-medium ${solid ? 'text-slate-600' : 'text-white/80'}`}>
+              Maçonnerie · Gros œuvre
+            </span>
+          </span>
+        </a>
 
-        <nav className="hidden items-center space-x-8 md:flex">
-          {navItems.map((item) => (
-            <button
+        <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
+          {NAV_ITEMS.map((item) => (
+            <a
               key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className={`text-sm font-medium uppercase tracking-wide transition-colors hover:text-orange-500 ${
-                isScrolled ? 'text-slate-800' : 'text-white'
+              href={`#${item.id}`}
+              className={`rounded-full px-4 py-2 text-[15px] font-medium transition-colors ${
+                solid ? 'text-slate-700 hover:bg-slate-100 hover:text-ink' : 'text-white/90 hover:bg-white/10 hover:text-white'
               }`}
             >
               {item.label}
-            </button>
+            </a>
           ))}
         </nav>
 
-        <div className="hidden items-center space-x-4 lg:flex">
+        <div className="flex items-center gap-2">
           <a
-            href="tel:0626651308"
-            className={`flex items-center space-x-2 text-sm transition-colors hover:text-orange-500 ${
-              isScrolled ? 'text-slate-800' : 'text-white'
+            href={CONTACT.phoneHref}
+            className={`hidden items-center gap-2 rounded-full px-4 py-2.5 text-[15px] font-semibold transition-colors lg:inline-flex ${
+              solid ? 'text-ink hover:bg-slate-100' : 'text-white hover:bg-white/10'
             }`}
           >
-            <Phone className="h-4 w-4 text-orange-500" />
-            <span>06 26 65 13 08</span>
+            <Phone className="h-4 w-4" aria-hidden="true" />
+            {CONTACT.phoneDisplay}
           </a>
           <a
-            href="mailto:entreprisecelikbatiment@gmail.com"
-            className={`flex items-center space-x-2 text-sm transition-colors hover:text-orange-500 ${
-              isScrolled ? 'text-slate-800' : 'text-white'
-            }`}
+            href="#contact"
+            className="hidden min-h-[44px] items-center gap-1.5 rounded-full bg-brand px-5 text-[15px] font-semibold text-white shadow-md shadow-brand/30 transition hover:bg-brand-dark md:inline-flex"
           >
-            <Mail className="h-4 w-4 text-orange-500" />
-            <span>entreprisecelikbatiment@gmail.com</span>
+            Devis gratuit
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </a>
-        </div>
 
-        <button
-          aria-label="Ouvrir le menu"
-          className={`rounded-lg p-2 md:hidden ${isScrolled ? 'text-slate-800' : 'text-white'}`}
-          onClick={() => setIsMenuOpen((prev) => !prev)}
-        >
-          {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
+          <button
+            type="button"
+            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className={`grid h-11 w-11 place-items-center rounded-full transition-colors md:hidden ${
+              solid ? 'bg-slate-100 text-ink' : 'bg-white/15 text-white backdrop-blur'
+            }`}
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {isMenuOpen && (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-4 md:hidden">
-          <div className="rounded-2xl border border-white/40 bg-white/95 p-4 shadow-lg backdrop-blur">
-            <nav className="flex flex-col space-y-3">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className="w-full rounded-lg px-3 py-2 text-left text-base font-medium text-slate-800 transition-colors hover:bg-orange-100 hover:text-orange-600"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-            <div className="mt-4 space-y-2 rounded-lg bg-orange-50 p-3 text-sm text-slate-800">
-              <a className="flex items-center space-x-2" href="tel:0626651308">
-                <Phone className="h-4 w-4 text-orange-500" />
-                <span>06 26 65 13 08</span>
+        <div
+          id="mobile-menu"
+          className="h-[calc(100dvh-4rem-env(safe-area-inset-top))] overflow-y-auto border-t border-slate-200 bg-white px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-2 md:hidden"
+        >
+          <nav aria-label="Menu mobile" className="flex flex-col">
+            {NAV_ITEMS.map((item, index) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={() => setIsMenuOpen(false)}
+                style={{ animationDelay: `${60 + index * 60}ms` }}
+                className="reveal flex min-h-[60px] items-center justify-between border-b border-slate-100 font-display text-2xl font-bold tracking-tight text-ink"
+              >
+                {item.label}
+                <ArrowRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
               </a>
-              <a className="flex items-center space-x-2 break-all" href="mailto:entreprisecelikbatiment@gmail.com">
-                <Mail className="h-4 w-4 text-orange-500" />
-                <span>entreprisecelikbatiment@gmail.com</span>
-              </a>
-            </div>
+            ))}
+          </nav>
+          <div className="reveal mt-8 grid gap-3" style={{ animationDelay: '320ms' }}>
+            <a href="#contact" onClick={() => setIsMenuOpen(false)} className="btn-primary w-full">
+              Demander un devis gratuit
+            </a>
+            <a href={CONTACT.phoneHref} className="btn w-full bg-slate-100 text-ink">
+              <Phone className="h-5 w-5" aria-hidden="true" />
+              {CONTACT.phoneDisplay}
+            </a>
           </div>
         </div>
       )}
@@ -145,6 +161,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
-

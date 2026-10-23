@@ -1,124 +1,106 @@
-import React, { useMemo } from 'react';
-import { ChevronDown, Award, Users, Calendar } from 'lucide-react';
-import mediaManifest from '../data/media-manifest.json';
+import type { CSSProperties } from 'react';
+import { ArrowRight, Phone, ShieldCheck, Hammer, FileCheck2, MapPin } from 'lucide-react';
+import { CONTACT } from '../data/catalog';
+import { getRootImageUrl, imageSrcSet, optimizeCloudinaryUrl } from '../lib/media';
+import { useParallax } from '../lib/motion';
 
-type ManifestMedia = {
-  kind: 'image' | 'video' | string;
-  url: string;
-};
+const HERO_IMAGE = getRootImageUrl() || '/images/f4e780e3-62d9-4004-b9fe-a2c1d58bdc1d.png';
 
-type MediaManifest = {
-  entries?: Record<string, { media?: ManifestMedia[] }>;
-};
+const TRUST_POINTS = [
+  { icon: Hammer, label: "17 ans d'expérience" },
+  { icon: ShieldCheck, label: 'Garantie décennale' },
+  { icon: FileCheck2, label: 'Devis gratuit' },
+];
+
+const delay = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
 
 const Hero = () => {
-  const scrollToServices = () => {
-    const element = document.getElementById('services');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const heroImageUrl = useMemo(() => {
-    const manifest = mediaManifest as MediaManifest;
-    const rootEntry = manifest.entries?.['.']?.media ?? [];
-    const image = rootEntry.find((item) => item.kind === 'image');
-    if (!image?.url) {
-      return '/images/f4e780e3-62d9-4004-b9fe-a2c1d58bdc1d.png';
-    }
-
-    if (!image.url.startsWith('https://res.cloudinary.com/')) {
-      return image.url;
-    }
-
-    const match = image.url.match(/(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)/);
-    if (!match) {
-      return image.url;
-    }
-
-    const [, prefix, rest] = match;
-    if (rest.startsWith('f_') || rest.startsWith('q_') || rest.startsWith('w_')) {
-      return image.url;
-    }
-
-    return `${prefix}f_auto,q_auto:good,w_1800/${rest}`;
-  }, []);
+  const sectionRef = useParallax<HTMLElement>();
 
   return (
     <section
+      ref={sectionRef}
       id="accueil"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden pt-28 pb-20 sm:pt-32 md:pt-40"
+      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-ink text-white"
     >
-      <div className="absolute inset-0">
+      <div className="hero-media absolute inset-0 -z-10">
         <img
-          src={heroImageUrl}
+          src={optimizeCloudinaryUrl(HERO_IMAGE, 'image', { width: 1800, quality: 'q_auto:good' })}
+          srcSet={imageSrcSet(HERO_IMAGE, [720, 1080, 1440, 1800])}
+          sizes="100vw"
           alt="Chef de chantier devant un mur de briques avec bétonnière"
           loading="eager"
           decoding="async"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-[72%_center] md:object-center"
         />
-        <div className="absolute inset-0 bg-slate-900/75" />
+      </div>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/70 to-ink/30 md:bg-gradient-to-r md:from-ink/95 md:via-ink/70 md:to-ink/10"
+      />
+
+      <div className="hero-content mx-auto flex w-full max-w-site flex-1 flex-col justify-end px-4 pb-10 pt-32 sm:px-6 md:justify-center md:pb-24">
+        <div className="max-w-2xl">
+          <p
+            className="reveal inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[13px] font-medium text-white/90 backdrop-blur"
+            style={delay(150)}
+          >
+            <MapPin className="h-4 w-4 text-brand-light" aria-hidden="true" />
+            Neufchâteau · Épinal · Vosges
+          </p>
+
+          <h1 className="mt-5 font-display text-[2.6rem] font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
+            <span className="line-mask">
+              <span style={delay(250)}>Construire solide,</span>
+            </span>
+            <span className="line-mask">
+              <span className="text-brand-light" style={delay(380)}>
+                depuis 17 ans.
+              </span>
+            </span>
+          </h1>
+
+          <p
+            className="reveal mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 sm:text-lg"
+            style={delay(560)}
+          >
+            CELIK Bâtiments, dirigée par Murat CELIK&nbsp;: fondations, murs, dalles béton et rénovation. Un travail
+            d&apos;artisan, soigné et livré dans les délais.
+          </p>
+
+          <div className="reveal mt-8 grid gap-3 sm:flex" style={delay(700)}>
+            <a href="#contact" className="btn-primary group">
+              Demander un devis gratuit
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            </a>
+            <a href={CONTACT.phoneHref} className="btn-ghost-dark">
+              <Phone className="h-5 w-5" aria-hidden="true" />
+              {CONTACT.phoneDisplay}
+            </a>
+          </div>
+
+          <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-3">
+            {TRUST_POINTS.map(({ icon: Icon, label }, index) => (
+              <li
+                key={label}
+                className="reveal flex items-center gap-2 text-[15px] font-medium text-white/90"
+                style={delay(860 + index * 110)}
+              >
+                <Icon className="h-5 w-5 text-brand-light" aria-hidden="true" />
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center text-white">
-        <h1 className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          CELIK <span className="text-orange-500">Bâtiments</span>
-        </h1>
-        <p className="mt-6 text-lg sm:text-xl md:text-2xl">
-          Entreprise CELIK dirigée par Murat CELIK, spécialistes du gros œuvre depuis plus de 17 ans
-        </p>
-        <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
-          Fondations, murs, dalle béton, rénovation : nous donnons vie à vos projets avec expertise, accompagnement sur
-          mesure et respect des délais.
-        </p>
-
-        <div className="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-          <button
-            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-            className="w-full rounded-lg bg-orange-500 px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-orange-600 hover:shadow-lg sm:w-auto"
-          >
-            Demander un devis
-          </button>
-          <button
-            onClick={scrollToServices}
-            className="w-full rounded-lg border-2 border-white px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-white hover:text-slate-800 sm:w-auto"
-          >
-            Nos services
-          </button>
-        </div>
-
-        <div className="mt-12 grid w-full grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
-          <div className="flex items-center justify-center space-x-3 rounded-xl bg-white/10 p-4 backdrop-blur">
-            <Award className="h-9 w-9 text-orange-400" />
-            <div className="text-left">
-              <p className="text-2xl font-bold sm:text-3xl">17+</p>
-              <p className="text-xs uppercase tracking-wide text-slate-200 sm:text-sm">Années d&apos;expérience</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-center space-x-3 rounded-xl bg-white/10 p-4 backdrop-blur">
-            <Users className="h-9 w-9 text-orange-400" />
-            <div className="text-left">
-              <p className="text-2xl font-bold sm:text-3xl">500+</p>
-              <p className="text-xs uppercase tracking-wide text-slate-200 sm:text-sm">Projets réalisés</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-center space-x-3 rounded-xl bg-white/10 p-4 backdrop-blur">
-            <Calendar className="h-9 w-9 text-orange-400" />
-            <div className="text-left">
-              <p className="text-2xl font-bold sm:text-3xl">100%</p>
-              <p className="text-xs uppercase tracking-wide text-slate-200 sm:text-sm">Clients satisfaits</p>
-            </div>
-          </div>
-        </div>
+      <div className="absolute inset-x-0 bottom-8 hidden justify-center md:flex">
+        <a href="#realisations" aria-label="Voir nos réalisations" className="reveal" style={delay(1300)}>
+          <span className="flex h-12 w-7 justify-center rounded-full border-2 border-white/40 pt-2">
+            <span className="h-2.5 w-1 animate-bounce rounded-full bg-white" />
+          </span>
+        </a>
       </div>
-
-      <button
-        onClick={scrollToServices}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white transition-transform hover:translate-y-1"
-        aria-label="Descendre vers les services"
-      >
-        <ChevronDown size={32} className="animate-bounce" />
-      </button>
     </section>
   );
 };

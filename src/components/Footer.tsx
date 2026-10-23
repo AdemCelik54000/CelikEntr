@@ -1,14 +1,14 @@
 import React from 'react';
-import { Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Instagram, Phone, Mail } from 'lucide-react';
+import { CONTACT, LOGO_URL } from '../data/catalog';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const handleInstagramClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     const appUrl = 'instagram://user?username=celik.batiment';
-    const webUrl = 'https://www.instagram.com/celik.batiment/';
     const fallbackTimer = window.setTimeout(() => {
-      window.open(webUrl, '_blank', 'noopener,noreferrer');
+      window.open(CONTACT.instagram, '_blank', 'noopener,noreferrer');
     }, 900);
 
     const handleVisibilityChange = () => {
@@ -23,77 +23,57 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-slate-800 text-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Informations entreprise */}
-          <div>
-            <div className="flex items-center space-x-2 mb-6">
-              <img
-                src="https://res.cloudinary.com/dq7d6rmbp/image/upload/c_crop,w_700,g_auto/v1766871018/celik-portfolio/logo.png"
-                alt="Celik Batiment"
-                className="w-12 h-12 object-contain rounded-lg"
-              />
-              <div>
-                <h3 className="text-xl font-bold">Celik Batiment</h3>
-                <p className="text-gray-400 text-sm">Gros oeuvre & Construction</p>
-              </div>
+    <footer className="bg-ink pb-[calc(env(safe-area-inset-bottom)+96px)] text-white md:pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto max-w-site px-4 py-14 sm:px-6">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between" data-reveal="up">
+          <div className="max-w-sm">
+            <div className="flex items-center gap-3">
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-white">
+                <img src={LOGO_URL} alt="" className="h-10 w-10 object-contain" />
+              </span>
+              <span>
+                <span className="block font-display text-xl font-extrabold tracking-tight">Celik Bâtiment</span>
+                <span className="block text-[14px] text-white/60">Gros œuvre &amp; Construction</span>
+              </span>
             </div>
-            <p className="text-gray-400 mb-6">
-              CELIK Batiments (Entreprise CELIK) realise vos projets de construction en gros oeuvre depuis plus de 17
+            <p className="mt-5 text-[15px] leading-relaxed text-white/60">
+              CELIK Bâtiments (Entreprise CELIK) réalise vos projets de construction en gros œuvre depuis plus de 17
               ans, avec expertise et passion.
             </p>
-            <div className="flex items-center gap-4 mt-8">
-              <a
-                href="#"
-                className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-orange-500 transition-colors"
-              >
-                <Facebook size={22} />
-              </a>
-              <a
-                href="https://www.instagram.com/celik.batiment/"
-                target="_blank"
-                rel="noreferrer"
-                onClick={handleInstagramClick}
-                className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-orange-500 transition-colors"
-              >
-                <Instagram size={22} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-orange-500 transition-colors"
-              >
-                <Linkedin size={22} />
-              </a>
-            </div>
           </div>
 
-          {/* Certifications */}
-          <div>
-            <h3 className="text-xl font-bold mb-6">Certifications</h3>
-            <div className="space-y-4 text-gray-400">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span>RGE Qualibat</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span>Garantie decennale</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span>Assurance responsabilite</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span>Artisan certifie</span>
-              </div>
-            </div>
+          <div className="grid gap-3 text-[15px]">
+            <a href={CONTACT.phoneHref} className="flex min-h-[44px] items-center gap-3 text-white/85 hover:text-white">
+              <Phone className="h-5 w-5 text-brand-light" aria-hidden="true" />
+              {CONTACT.phoneDisplay}
+            </a>
+            <a
+              href={`mailto:${CONTACT.email}`}
+              className="flex min-h-[44px] items-center gap-3 text-white/85 hover:text-white"
+            >
+              <Mail className="h-5 w-5 shrink-0 text-brand-light" aria-hidden="true" />
+              <span>
+                {CONTACT.email.split('@')[0]}
+                <wbr />@{CONTACT.email.split('@')[1]}
+              </span>
+            </a>
+            <a
+              href={CONTACT.instagram}
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleInstagramClick}
+              className="flex min-h-[44px] items-center gap-3 text-white/85 hover:text-white"
+            >
+              <Instagram className="h-5 w-5 text-brand-light" aria-hidden="true" />
+              @celik.batiment
+            </a>
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; {currentYear} Celik Batiment. Tous droits reserves.</p>
+        <div className="mt-12 border-t border-white/10 pt-6 text-[13px] text-white/50">
+          <p>
+            &copy; {currentYear} Celik Bâtiment · {CONTACT.street}, {CONTACT.city}. Tous droits réservés.
+          </p>
         </div>
       </div>
     </footer>
@@ -101,4 +81,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, Paperclip } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Paperclip, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CONTACT } from '../data/catalog';
+import { stagger } from '../lib/motion';
 
-type Status = 'idle' | 'success' | 'error';
+type Status = 'idle' | 'sending' | 'success' | 'error';
 
 const initialForm = {
   name: '',
@@ -11,6 +13,19 @@ const initialForm = {
   message: '',
 };
 
+const PROJECT_TYPES = [
+  { value: 'fondations', label: 'Fondations' },
+  { value: 'murs', label: 'Murs & Cloisons' },
+  { value: 'dalle', label: 'Dalle béton' },
+  { value: 'renovation', label: 'Rénovation' },
+  { value: 'extension', label: 'Extension' },
+  { value: 'autre', label: 'Autre' },
+];
+
+const fieldClass =
+  'w-full rounded-2xl border border-slate-300 bg-white px-4 py-3.5 text-[17px] text-ink placeholder:text-slate-400 transition focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15';
+const labelClass = 'mb-1.5 block text-[15px] font-semibold text-ink';
+
 const Contact = () => {
   const [formData, setFormData] = useState(initialForm);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -18,9 +33,10 @@ const Contact = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus('idle');
+    const form = event.currentTarget;
+    setStatus('sending');
 
-    const payload = new FormData(event.currentTarget);
+    const payload = new FormData(form);
     payload.set('form-name', 'devis');
 
     if (files) {
@@ -29,7 +45,7 @@ const Contact = () => {
     }
 
     try {
-      const actionUrl = event.currentTarget.action || '/?no-cache=1';
+      const actionUrl = form.action || '/?no-cache=1';
       const response = await fetch(actionUrl, {
         method: 'POST',
         body: payload,
@@ -42,8 +58,7 @@ const Contact = () => {
         setStatus('success');
         setFormData(initialForm);
         setFiles(null);
-        event.currentTarget.reset();
-        window.setTimeout(() => setStatus('idle'), 5000);
+        form.reset();
         return;
       }
 
@@ -51,13 +66,10 @@ const Contact = () => {
     } catch (error) {
       console.error(error);
       setStatus('error');
-      window.setTimeout(() => setStatus('idle'), 7000);
     }
   };
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
@@ -65,88 +77,105 @@ const Contact = () => {
   };
 
   return (
-    <section id="contact" className="bg-gray-50 py-20">
-      <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-slate-800 md:text-5xl">
-            Contactez-<span className="text-orange-500">nous</span>
+    <section id="contact" className="scroll-mt-16 bg-white py-16 sm:py-24">
+      <div className="mx-auto max-w-site px-4 sm:px-6">
+        <div className="max-w-2xl">
+          <p className="section-eyebrow" data-reveal="up">
+            Contact
+          </p>
+          <h2 className="section-title mt-3" data-reveal="blur" style={stagger(1)}>
+            Parlons de votre projet.
           </h2>
-          <p className="mx-auto max-w-3xl text-xl text-gray-600">
-            Prêt à démarrer votre projet ? Envoyez-nous une demande de devis complète pour un retour rapide.
+          <p className="mt-4 text-[17px] leading-relaxed text-slate-600" data-reveal="up" style={stagger(2)}>
+            Envoyez-nous une demande de devis complète pour un retour rapide. Le devis est gratuit et sans engagement.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          <div className="space-y-8">
-            <div className="rounded-lg bg-white p-8 shadow-lg">
-              <h3 className="mb-6 text-2xl font-bold text-slate-800">Informations de contact</h3>
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
-                    <Phone className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800">Téléphone</h4>
-                    <p className="text-gray-600">06 26 65 13 08</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
-                    <Mail className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800">Email</h4>
-                    <p className="text-gray-600">entreprisecelikbatiment@gmail.com</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
-                    <MapPin className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800">Adresse</h4>
-                    <p className="text-gray-600">
-                      473 Rue du chemin vert
-                      <br />
-                      88300 Neufchâteau, France
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
-                    <Clock className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800">Horaires</h4>
-                    <p className="text-gray-600">
-                      Lun-Ven : 8h - 18h
-                      <br />
-                      Samedi : 8h - 12h
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="mt-10 grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10">
+          <div className="grid content-start gap-3">
+            <a
+              href={CONTACT.phoneHref}
+              data-reveal="left"
+              className="group flex items-center gap-4 rounded-3xl bg-brand p-5 text-white shadow-lg shadow-brand/25 transition hover:bg-brand-dark"
+            >
+              <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15">
+                <span className="absolute inset-0 animate-ping rounded-2xl bg-white/20 [animation-duration:2.4s]" aria-hidden="true" />
+                <Phone className="h-6 w-6 transition-transform duration-300 group-hover:rotate-12" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-[14px] font-medium text-white/80">Appelez-nous</span>
+                <span className="block font-display text-2xl font-bold tracking-tight">{CONTACT.phoneDisplay}</span>
+              </span>
+            </a>
 
-            <div className="rounded-lg bg-white p-8 shadow-lg">
-              <h3 className="mb-4 text-2xl font-bold text-slate-800">Zone d’intervention</h3>
-              <p className="mb-4 text-gray-600">
-                Nous intervenons dans les Vosges et le Grand Est, autour d’Épinal, Neufchâteau et Mirecourt, pour vos
-                travaux de maçonnerie et de gros œuvre.
-              </p>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div>Épinal</div>
-                <div>Neufchâteau</div>
-                <div>Mirecourt</div>
-                <div>Charmes</div>
-                <div>Rambervillers</div>
-                <div>Golbey</div>
+            <a
+              href={`mailto:${CONTACT.email}`}
+              data-reveal="left"
+              style={stagger(1, 120)}
+              className="flex items-center gap-4 rounded-3xl bg-mortar p-5 ring-1 ring-slate-200/70 transition hover:bg-slate-100"
+            >
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand ring-1 ring-slate-200">
+                <Mail className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[14px] font-medium text-slate-600">Écrivez-nous</span>
+                <span className="block text-[16px] font-semibold text-ink">
+                  {CONTACT.email.split('@')[0]}
+                  <wbr />@{CONTACT.email.split('@')[1]}
+                </span>
+              </span>
+            </a>
+
+            <div
+              data-reveal="left"
+              style={stagger(2, 120)}
+              className="grid gap-5 rounded-3xl bg-mortar p-5 ring-1 ring-slate-200/70 sm:grid-cols-2 lg:grid-cols-1"
+            >
+              <div className="flex gap-4">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand ring-1 ring-slate-200">
+                  <MapPin className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-[14px] font-medium text-slate-600">Adresse</span>
+                  <span className="block font-semibold text-ink">
+                    {CONTACT.street}
+                    <br />
+                    {CONTACT.city}
+                  </span>
+                  <a
+                    href={CONTACT.mapsHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-block py-1 text-[15px] font-semibold text-brand underline-offset-4 hover:underline"
+                  >
+                    Itinéraire →
+                  </a>
+                </span>
+              </div>
+              <div className="flex gap-4">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand ring-1 ring-slate-200">
+                  <Clock className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-[14px] font-medium text-slate-600">Horaires</span>
+                  <span className="block font-semibold text-ink">
+                    Lun – Ven : 8h – 18h
+                    <br />
+                    Samedi : 8h – 12h
+                  </span>
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-8 shadow-lg">
-            <h3 className="mb-6 text-2xl font-bold text-slate-800">Demander un devis</h3>
+          <div
+            data-reveal="up"
+            style={stagger(1, 150)}
+            className="rounded-3xl bg-white p-5 shadow-[0_20px_60px_-20px_rgba(11,26,48,0.18)] ring-1 ring-slate-200 sm:p-8"
+          >
+            <h3 className="font-display text-2xl font-bold tracking-tight text-ink">Demander un devis</h3>
+            <p className="mt-1 text-[15px] text-slate-600">Les champs marqués * sont obligatoires.</p>
+
             <form
               name="devis"
               method="POST"
@@ -155,7 +184,7 @@ const Contact = () => {
               data-netlify-honeypot="bot-field"
               encType="multipart/form-data"
               onSubmit={handleSubmit}
-              className="space-y-6"
+              className="mt-6 space-y-5"
             >
               <input type="hidden" name="form-name" value="devis" />
               <p className="hidden">
@@ -164,76 +193,80 @@ const Contact = () => {
                 </label>
               </p>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className={labelClass}>
                     Nom complet *
                   </label>
                   <input
                     type="text"
                     id="name"
                     name="name"
+                    autoComplete="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                    className={fieldClass}
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-gray-700">
+                  <label htmlFor="phone" className={labelClass}>
                     Téléphone
                   </label>
                   <input
                     type="tel"
                     id="phone"
                     name="phone"
+                    autoComplete="tel"
+                    inputMode="tel"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                    className={fieldClass}
                   />
-                </div>
-                <div>
-                  <label htmlFor="subject" className="mb-2 block text-sm font-medium text-gray-700">
-                    Type de projet *
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-                  >
-                    <option value="">Sélectionner un type</option>
-                    <option value="fondations">Fondations</option>
-                    <option value="murs">Murs &amp; Cloisons</option>
-                    <option value="dalle">Dalle béton</option>
-                    <option value="renovation">Rénovation</option>
-                    <option value="extension">Extension</option>
-                    <option value="autre">Autre</option>
-                  </select>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="message" className="mb-2 block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className={labelClass}>
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className={fieldClass}
+                />
+              </div>
+
+              <fieldset>
+                <legend className={labelClass}>Type de projet *</legend>
+                <div className="flex flex-wrap gap-2">
+                  {PROJECT_TYPES.map((type) => (
+                    <label key={type.value} className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="subject"
+                        value={type.value}
+                        checked={formData.subject === type.value}
+                        onChange={handleChange}
+                        required
+                        className="peer sr-only"
+                      />
+                      <span className="inline-flex min-h-[44px] items-center rounded-full border border-slate-300 px-4 text-[15px] font-medium text-slate-700 transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30">
+                        {type.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div>
+                <label htmlFor="message" className={labelClass}>
                   Description du projet *
                 </label>
                 <textarea
@@ -242,26 +275,23 @@ const Contact = () => {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows={6}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-                  placeholder="Décrivez votre projet en détail : surface, matériaux souhaités, délais, etc."
+                  rows={5}
+                  className={fieldClass}
+                  placeholder="Surface, matériaux souhaités, délais…"
                 ></textarea>
               </div>
 
               <div>
-                <label htmlFor="files" className="mb-2 block text-sm font-medium text-gray-700">
-                  Ajouter des fichiers (plans, photos, documents…)
-                </label>
                 <label
                   htmlFor="files"
-                  className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 transition-colors hover:border-orange-400 hover:text-orange-500"
+                  className="flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-slate-300 px-4 py-3 text-[15px] text-slate-600 transition hover:border-brand hover:text-brand"
                 >
-                  <span>
+                  <Paperclip className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span className="font-medium">
                     {files && files.length > 0
                       ? `${files.length} fichier${files.length > 1 ? 's' : ''} sélectionné${files.length > 1 ? 's' : ''}`
-                      : 'Cliquez pour sélectionner ou glissez-déposez vos fichiers'}
+                      : 'Joindre des photos ou plans (facultatif)'}
                   </span>
-                  <Paperclip className="h-5 w-5" />
                 </label>
                 <input
                   id="files"
@@ -270,25 +300,34 @@ const Contact = () => {
                   multiple
                   onChange={(event) => setFiles(event.target.files)}
                   accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx"
-                  className="hidden"
+                  className="sr-only"
                 />
-                <p className="mt-2 text-xs text-gray-500">Formats acceptés : JPG, PNG, HEIC, PDF, DOC (max 10 Mo chacun).</p>
+                <p className="mt-2 text-[13px] text-slate-500">JPG, PNG, HEIC, PDF, DOC · 10 Mo max par fichier.</p>
               </div>
 
-              <button
-                type="submit"
-                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-orange-500 py-4 px-6 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-orange-600"
-              >
-                <Send className="h-5 w-5" />
-                <span>Envoyer la demande</span>
+              <button type="submit" disabled={status === 'sending'} className="btn-primary w-full disabled:opacity-70">
+                {status === 'sending' ? (
+                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Send className="h-5 w-5" aria-hidden="true" />
+                )}
+                {status === 'sending' ? 'Envoi en cours…' : 'Envoyer ma demande'}
               </button>
 
-              {status === 'success' && (
-                <p className="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                  Merci ! Votre demande de devis a bien été envoyée. Nous revenons vers vous rapidement.
-                </p>
-              )}
-              {status === 'error' && null}
+              <div aria-live="polite">
+                {status === 'success' && (
+                  <p className="pop-in flex items-start gap-3 rounded-2xl bg-green-50 px-4 py-3.5 text-[15px] font-medium text-green-800">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                    Merci ! Votre demande de devis a bien été envoyée. Nous revenons vers vous rapidement.
+                  </p>
+                )}
+                {status === 'error' && (
+                  <p className="pop-in flex items-start gap-3 rounded-2xl bg-red-50 px-4 py-3.5 text-[15px] font-medium text-red-800">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                    L&apos;envoi n&apos;a pas abouti. Réessayez ou appelez-nous au {CONTACT.phoneDisplay}.
+                  </p>
+                )}
+              </div>
             </form>
           </div>
         </div>
@@ -298,4 +337,3 @@ const Contact = () => {
 };
 
 export default Contact;
-

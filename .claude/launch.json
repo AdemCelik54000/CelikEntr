@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "celik-site",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "env": {
+        "VITE_SITE_URL": "https://celikbatiment.com"
+      },
+      "port": 5173
+    }
+  ]
+}
